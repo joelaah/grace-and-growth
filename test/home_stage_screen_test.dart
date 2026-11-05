@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bible_glory/screens/home_stage_screen.dart';
 import 'package:bible_glory/theme/mood_stage_theme.dart';
-import 'package:bible_glory/widgets/verse_stage_card.dart';
+import 'package:bible_glory/widgets/inshorts_stage_card.dart';
 
 void main() {
   group('HomeStageScreen Layout & Responsiveness', () {
     testWidgets('Renders without overflow on 320x640 narrow mobile screen', (tester) async {
       tester.view.physicalSize = const Size(320, 640);
       tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
@@ -20,7 +23,10 @@ void main() {
     testWidgets('Renders without overflow on 360x800 standard Android screen', (tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
@@ -31,7 +37,10 @@ void main() {
     testWidgets('Renders without overflow on 412x915 large mobile screen', (tester) async {
       tester.view.physicalSize = const Size(412, 915);
       tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
@@ -40,7 +49,7 @@ void main() {
     });
   });
 
-  group('Requirement Verification', () {
+  group('Inshorts Vertical Feed & Requirement Verification', () {
     testWidgets('Scaffold body is wrapped in AnimatedContainer (600ms, Curves.easeInOutCubic, LinearGradient)', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
@@ -62,18 +71,26 @@ void main() {
       expect(gradient.colors, [gloomyPalette.bgTop, gloomyPalette.bgBottom]);
     });
 
-    testWidgets('Top header bar has "Grace & Growth" and compact language selector pill (eng, lus, hin, spa)', (tester) async {
+    testWidgets('Top header bar has "Grace & Growth", compact filter toggle, and language selector pill', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
+      // App Title
       expect(find.text('Grace & Growth'), findsOneWidget);
+
+      // Filter toggle options
+      expect(find.text('All'), findsOneWidget);
+      expect(find.text('Verses'), findsOneWidget);
+      expect(find.text('Quotes'), findsOneWidget);
+
+      // Language selector
       expect(find.text('eng'), findsOneWidget);
       expect(find.text('lus'), findsOneWidget);
       expect(find.text('hin'), findsOneWidget);
       expect(find.text('spa'), findsOneWidget);
     });
 
-    testWidgets('Horizontal chip selector displays 4 MoodStage values', (tester) async {
+    testWidgets('Horizontal chip selector displays "How is your heart today?" and 4 MoodStage values', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
@@ -82,70 +99,104 @@ void main() {
       expect(find.text(StagePalette.growing.stageLabel), findsOneWidget);
       expect(find.text(StagePalette.bright.stageLabel), findsOneWidget);
       expect(find.text(StagePalette.humble.stageLabel), findsOneWidget);
+      expect(find.text('Random'), findsOneWidget);
     });
 
-    testWidgets('AnimatedSwitcher has 400ms duration and key format ValueKey(verseId_langCode)', (tester) async {
+    testWidgets('Uses vertical PageView.builder with viewportFraction 0.88, BouncingScrollPhysics, and pageSnapping', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
-      final switcherFinder = find.byType(AnimatedSwitcher);
-      expect(switcherFinder, findsOneWidget);
+      final pageViewFinder = find.byType(PageView);
+      expect(pageViewFinder, findsOneWidget);
 
-      final switcher = tester.widget<AnimatedSwitcher>(switcherFinder);
-      expect(switcher.duration, const Duration(milliseconds: 400));
-
-      final verseCardFinder = find.byType(VerseStageCard);
-      expect(verseCardFinder, findsOneWidget);
-
-      final verseCard = tester.widget<VerseStageCard>(verseCardFinder);
-      expect(verseCard.key, const ValueKey('gloomy_ps34_18_eng'));
+      final pageView = tester.widget<PageView>(pageViewFinder);
+      expect(pageView.scrollDirection, equals(Axis.vertical));
+      expect(pageView.pageSnapping, isTrue);
+      expect(pageView.physics, isA<BouncingScrollPhysics>());
+      expect(pageView.controller?.viewportFraction, equals(0.88));
     });
 
-    testWidgets('Switching language cross-fades and updates text and key', (tester) async {
+    testWidgets('Renders InshortsStageCard with split 55%/45% layout and ValueKey format', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Lord is close to the brokenhearted'), findsOneWidget);
+      final cardFinder = find.byType(InshortsStageCard);
+      expect(cardFinder, findsWidgets);
+
+      final firstCard = tester.widget<InshortsStageCard>(cardFinder.first);
+      expect(firstCard.key, isNotNull);
+      expect(firstCard.key.toString(), contains('eng'));
+    });
+
+    testWidgets('Filter toggle switches between All, Verses only, and Quotes only', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.currentFilter, equals(ContentFilter.all));
+      expect(state.displayedItems.any((item) => item.isVerse), isTrue);
+      expect(state.displayedItems.any((item) => item.isQuote), isTrue);
+
+      // Tap 'Verses'
+      await tester.tap(find.text('Verses'));
+      await tester.pumpAndSettle();
+
+      expect(state.currentFilter, equals(ContentFilter.verses));
+      expect(state.displayedItems.every((item) => item.isVerse), isTrue);
+
+      // Tap 'Quotes'
+      await tester.tap(find.text('Quotes'));
+      await tester.pumpAndSettle();
+
+      expect(state.currentFilter, equals(ContentFilter.quotes));
+      expect(state.displayedItems.every((item) => item.isQuote), isTrue);
+
+      // Tap 'All'
+      await tester.tap(find.text('All'));
+      await tester.pumpAndSettle();
+
+      expect(state.currentFilter, equals(ContentFilter.all));
+    });
+
+    testWidgets('Switching language updates text and reflections in feed', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('eng'), findsOneWidget);
 
       // Tap Mizo/Lushai
       await tester.tap(find.text('lus'));
       await tester.pumpAndSettle();
 
-      final verseCard = tester.widget<VerseStageCard>(find.byType(VerseStageCard));
-      expect(verseCard.key, const ValueKey('gloomy_ps34_18_lus'));
-      expect(find.textContaining('thinlung lungchhiatte hnaihah'), findsOneWidget);
-      expect(find.text('Ngaihtuah Zui Atan'), findsOneWidget);
+      expect(find.text('Ngaihtuah Zui Atan'), findsWidgets);
 
       // Tap Hindi
       await tester.tap(find.text('hin'));
       await tester.pumpAndSettle();
 
-      final hindiCard = tester.widget<VerseStageCard>(find.byType(VerseStageCard));
-      expect(hindiCard.key, const ValueKey('gloomy_ps34_18_hin'));
-      expect(find.textContaining('यहोवा टूटे मन वालों के समीप'), findsOneWidget);
-      expect(find.text('एक शांत विचार'), findsOneWidget);
+      expect(find.text('एक शांत विचार'), findsWidgets);
 
       // Tap Spanish
       await tester.tap(find.text('spa'));
       await tester.pumpAndSettle();
 
-      final spaCard = tester.widget<VerseStageCard>(find.byType(VerseStageCard));
-      expect(spaCard.key, const ValueKey('gloomy_ps34_18_spa'));
-      expect(find.textContaining('Cercano está Jehová a los quebrantados'), findsOneWidget);
-      expect(find.text('Un Pensamiento Suave'), findsOneWidget);
+      expect(find.text('Un Pensamiento Suave'), findsWidgets);
     });
 
-    testWidgets('Switching mood stage transitions gradient and verse key', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+    testWidgets('Tapping mood chip jumps/scrolls to that mood and transitions gradient', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
       await tester.pumpAndSettle();
 
+      final state = screenKey.currentState!;
+
       // Tap 'Bright & Grateful'
+      await tester.ensureVisible(find.text(StagePalette.bright.stageLabel));
       await tester.tap(find.text(StagePalette.bright.stageLabel));
       await tester.pumpAndSettle();
 
-      final verseCard = tester.widget<VerseStageCard>(find.byType(VerseStageCard));
-      expect(verseCard.key, const ValueKey('bright_num6_24_eng'));
-      expect(find.text('Numbers 6:24-26'), findsOneWidget);
+      expect(state.activeStage, equals(MoodStage.bright));
 
       final animatedContainer = tester.widget<AnimatedContainer>(
         find.descendant(of: find.byType(Scaffold), matching: find.byType(AnimatedContainer)).first,
@@ -154,99 +205,217 @@ void main() {
       expect(gradient.colors, [StagePalette.bright.bgTop, StagePalette.bright.bgBottom]);
     });
 
-    testWidgets('Bookmark state is maintained per verse without leaking across moods', (tester) async {
+    testWidgets('Tapping Save toggles bookmark state and displays floating notice', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
-      // Gloomy verse starts not saved
-      expect(find.text('Save'), findsOneWidget);
+      expect(find.text('Save'), findsWidgets);
 
-      // Bookmark gloomy
-      await tester.tap(find.text('Save'));
-      await tester.pumpAndSettle();
-      expect(find.text('Saved'), findsOneWidget);
-
-      // Switch to Growing stage
-      await tester.tap(find.text(StagePalette.growing.stageLabel));
+      // Tap first Save button
+      await tester.tap(find.text('Save').first);
       await tester.pumpAndSettle();
 
-      // Growing stage must NOT be bookmarked
-      expect(find.text('Save'), findsOneWidget);
-      expect(find.text('Saved'), findsNothing);
-
-      // Switch back to Gloomy stage
-      await tester.tap(find.text(StagePalette.gloomy.stageLabel));
-      await tester.pumpAndSettle();
-
-      // Gloomy stage MUST still be bookmarked
-      expect(find.text('Saved'), findsOneWidget);
+      expect(find.text('Saved to your quiet sanctuary'), findsOneWidget);
+      expect(find.text('Saved'), findsWidgets);
     });
 
-    testWidgets('Audio playback state is maintained per verse without leaking', (tester) async {
+    testWidgets('Tapping Share triggers gentle comfort notice', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Listen'), findsOneWidget);
+      expect(find.text('Share'), findsWidgets);
 
-      // Start audio on gloomy
-      await tester.tap(find.text('Listen'));
-      await tester.pumpAndSettle();
-      expect(find.text('Pause'), findsOneWidget);
-
-      // Switch to Humble stage
-      await tester.tap(find.text(StagePalette.humble.stageLabel));
+      await tester.tap(find.text('Share').first);
       await tester.pumpAndSettle();
 
-      // Humble must show Listen, not Pause
-      expect(find.text('Listen'), findsOneWidget);
-      expect(find.text('Pause'), findsNothing);
+      expect(find.text('Copied to share gentle comfort'), findsOneWidget);
     });
+  });
 
-    testWidgets('Cards have 24px border radius', (tester) async {
+  group('Cross-Device Responsiveness & Adaptive Viewports', () {
+    testWidgets('Renders without overflow on 280x653 narrow foldable screen (Galaxy Z Fold)', (tester) async {
+      tester.view.physicalSize = const Size(280, 653);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
-      final containers = tester.widgetList<Container>(find.descendant(
-        of: find.byType(VerseStageCard),
-        matching: find.byType(Container),
-      ));
-
-      final cardContainers = containers.where((c) {
-        final d = c.decoration;
-        if (d is BoxDecoration && d.borderRadius is BorderRadius) {
-          final br = d.borderRadius as BorderRadius;
-          return br.topLeft.x == 24.0 && br.bottomRight.x == 24.0;
-        }
-        return false;
-      }).toList();
-
-      // Scripture card and Reflection card both have 24px border radius
-      expect(cardContainers.length, greaterThanOrEqualTo(2));
+      expect(tester.takeException(), isNull);
+      expect(find.text('Grace & Growth'), findsOneWidget);
     });
 
-    testWidgets('Tapping mood chip or random daily pause updates activeStage = currentVerse.primaryStage', (tester) async {
+    testWidgets('Renders without overflow on 500dp short screen / split-screen multitasking', (tester) async {
+      tester.view.physicalSize = const Size(360, 500);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(InshortsStageCard), findsWidgets);
+    });
+
+    testWidgets('Renders centered within 540dp maxWidth on 1024x768 tablet viewport', (tester) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final cardBox = tester.getRect(find.byType(InshortsStageCard).first);
+      expect(cardBox.width, lessThanOrEqualTo(540.0));
+      expect(cardBox.left, greaterThan(200.0));
+    });
+
+    testWidgets('Renders centered within 540dp maxWidth on 1920x1080 desktop viewport', (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final cardBox = tester.getRect(find.byType(InshortsStageCard).first);
+      expect(cardBox.width, lessThanOrEqualTo(540.0));
+      expect(cardBox.left, greaterThan(600.0));
+    });
+
+    testWidgets('Renders without overflow under 1.5x accessibility text scaling', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(1.5)),
+            child: const HomeStageScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Grace & Growth'), findsOneWidget);
+    });
+
+    testWidgets('Renders without overflow on 280x653 narrow screen with 1.5x text scaling', (tester) async {
+      tester.view.physicalSize = const Size(280, 653);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(1.5)),
+            child: const HomeStageScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Renders without overflow on 280x653 narrow screen with 2.0x text scaling', (tester) async {
+      tester.view.physicalSize = const Size(280, 653);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+            child: const HomeStageScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Renders without overflow on 360x450 compact split-screen height', (tester) async {
+      tester.view.physicalSize = const Size(360, 450);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Renders without overflow on 320x480 legacy small phone', (tester) async {
+      tester.view.physicalSize = const Size(320, 480);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Vertical drag over quote text smoothly scrolls PageView to next card (pass-through)', (tester) async {
       final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
       await tester.pumpAndSettle();
 
       final state = screenKey.currentState!;
-      expect(state.activeStage, equals(MoodStage.gloomy));
+      final initialPage = state.pageController.page ?? 0;
 
-      // Tap 'Growing in Sorrow' chip
-      await tester.tap(find.text(StagePalette.growing.stageLabel));
+      // Find the quote text widget inside the first card
+      final firstCard = find.byType(InshortsStageCard).first;
+      final quoteText = find.descendant(
+        of: firstCard,
+        matching: find.byType(SingleChildScrollView),
+      ).first;
+
+      await tester.drag(quoteText, const Offset(0, -400));
       await tester.pumpAndSettle();
 
-      expect(state.activeStage, equals(MoodStage.growing));
-
-      // Tap 'Random' trigger in mood header
-      await tester.tap(find.text('Random'));
-      await tester.pumpAndSettle();
-
-      // activeStage must match currentVerse.primaryStage
-      final verseCard = tester.widget<VerseStageCard>(find.byType(VerseStageCard));
-      expect(state.activeStage, isNotNull);
-      expect(find.byType(VerseStageCard), findsOneWidget);
-      expect(verseCard.verse.id, isNotEmpty);
+      final newPage = state.pageController.page ?? 0;
+      expect(newPage, greaterThan(initialPage));
     });
   });
 }

@@ -56,6 +56,9 @@ class InspirationalQuote {
       }
     }
 
+    final quoteStr = json['quote']?.toString() ?? '';
+    final authorStr = json['author']?.toString() ?? 'Anonymous';
+
     final reflectionsMap = <String, String>{};
     if (json['reflections'] is Map) {
       (json['reflections'] as Map).forEach((k, v) {
@@ -63,6 +66,9 @@ class InspirationalQuote {
       });
     } else if (json['reflection'] is String) {
       reflectionsMap['eng'] = json['reflection'] as String;
+    }
+    if (reflectionsMap.isEmpty) {
+      reflectionsMap.addAll(QuoteApiService.defaultReflectionForStage(stage));
     }
 
     final promptsMap = <String, String>{};
@@ -73,15 +79,20 @@ class InspirationalQuote {
     } else if (json['prompt'] is String) {
       promptsMap['eng'] = json['prompt'] as String;
     }
+    if (promptsMap.isEmpty) {
+      promptsMap.addAll(QuoteApiService.defaultPromptForStage(stage));
+    }
+
+    final rawId = json['id']?.toString();
+    final fallbackId = 'quote_${(quoteStr + authorStr).hashCode & 0x7fffffff}';
 
     return InspirationalQuote(
-      id: json['id']?.toString() ??
-          'quote_${json['quote'].hashCode.abs()}',
-      quote: json['quote']?.toString() ?? '',
-      author: json['author']?.toString() ?? 'Anonymous',
+      id: rawId != null && rawId.isNotEmpty ? rawId : fallbackId,
+      quote: quoteStr,
+      author: authorStr,
       stage: stage,
-      category: json['category']?.toString() ?? 'Inspirational Wisdom',
-      subTag: json['sub_tag']?.toString() ?? json['subTag']?.toString() ?? 'Pause & Reflect',
+      category: json['category']?.toString() ?? QuoteApiService.categoryForStage(stage),
+      subTag: json['sub_tag']?.toString() ?? json['subTag']?.toString() ?? QuoteApiService.subTagForStage(stage),
       reflections: reflectionsMap,
       prompts: promptsMap,
     );
@@ -171,7 +182,8 @@ class QuoteApiService {
             final q = item['q']?.toString().trim() ?? '';
             final a = item['a']?.toString().trim() ?? 'Unknown';
             if (q.isNotEmpty) {
-              quotes.add(_buildClassifiedQuote('zq_$i', q, a));
+              final quoteId = 'zq_${(q + a).hashCode & 0x7fffffff}';
+              quotes.add(_buildClassifiedQuote(quoteId, q, a));
             }
           }
         }
@@ -196,7 +208,8 @@ class QuoteApiService {
             final q = item['quote']?.toString().trim() ?? '';
             final a = item['author']?.toString().trim() ?? 'Unknown';
             if (q.isNotEmpty) {
-              quotes.add(_buildClassifiedQuote('dj_${item['id'] ?? i}', q, a));
+              final quoteId = 'dj_${item['id'] ?? ((q + a).hashCode & 0x7fffffff)}';
+              quotes.add(_buildClassifiedQuote(quoteId, q, a));
             }
           }
         }
@@ -264,7 +277,7 @@ class QuoteApiService {
 
     if (maxScore == 0) {
       // Balanced deterministic fallback across words
-      final hash = text.hashCode.abs();
+      final hash = text.hashCode & 0x7fffffff;
       return MoodStage.values[hash % MoodStage.values.length];
     }
 
@@ -276,10 +289,10 @@ class QuoteApiService {
 
   InspirationalQuote _buildClassifiedQuote(String id, String quote, String author) {
     final stage = classifyMood(quote);
-    final category = _categoryForStage(stage);
-    final subTag = _subTagForStage(stage);
-    final reflection = _generateReflection(quote, author, stage);
-    final prompt = _generatePrompt(stage);
+    final category = categoryForStage(stage);
+    final subTag = subTagForStage(stage);
+    final reflection = defaultReflectionForStage(stage);
+    final prompt = defaultPromptForStage(stage);
 
     return InspirationalQuote(
       id: id,
@@ -293,7 +306,7 @@ class QuoteApiService {
     );
   }
 
-  String _categoryForStage(MoodStage stage) {
+  static String categoryForStage(MoodStage stage) {
     switch (stage) {
       case MoodStage.gloomy:
         return 'Comfort in Heavy Seasons';
@@ -306,7 +319,7 @@ class QuoteApiService {
     }
   }
 
-  String _subTagForStage(MoodStage stage) {
+  static String subTagForStage(MoodStage stage) {
     switch (stage) {
       case MoodStage.gloomy:
         return 'Morning Pause';
@@ -319,7 +332,7 @@ class QuoteApiService {
     }
   }
 
-  Map<String, String> _generateReflection(String quote, String author, MoodStage stage) {
+  static Map<String, String> defaultReflectionForStage(MoodStage stage) {
     switch (stage) {
       case MoodStage.gloomy:
         return {
@@ -368,7 +381,7 @@ class QuoteApiService {
     }
   }
 
-  Map<String, String> _generatePrompt(MoodStage stage) {
+  static Map<String, String> defaultPromptForStage(MoodStage stage) {
     switch (stage) {
       case MoodStage.gloomy:
         return {
