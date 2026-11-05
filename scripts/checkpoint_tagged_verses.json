@@ -1,0 +1,378 @@
+{
+  "completed_chapters": [
+    "PSA.34"
+  ],
+  "total_tagged_verses": 22,
+  "last_updated": "2026-11-05T06:35:00.000000+00:00",
+  "tagged_verses": {
+    "PSA.34.1": {
+      "id": "PSA.34.1",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 1,
+      "text": "I will bless the LORD at all times; His praise will always be on my lips.",
+      "is_standalone_quote": true,
+      "primary_stage": "bright",
+      "mood_tags": [
+        "joy",
+        "praise",
+        "radiant"
+      ],
+      "humble_reflection_eng": "Let gratitude lighten your spirit today, holding joy with an open, humble hand.",
+      "category": "Joy & Grateful Praise",
+      "sub_tag": "Morning Light"
+    },
+    "PSA.34.2": {
+      "id": "PSA.34.2",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 2,
+      "text": "My soul boasts in the LORD; let the oppressed hear and rejoice.",
+      "is_standalone_quote": true,
+      "primary_stage": "bright",
+      "mood_tags": [
+        "joy",
+        "praise",
+        "peace"
+      ],
+      "humble_reflection_eng": "When life feels heavy, boasting in God's goodness rather than our own strength brings quiet comfort.",
+      "category": "Joy & Grateful Praise",
+      "sub_tag": "Morning Light"
+    },
+    "PSA.34.3": {
+      "id": "PSA.34.3",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 3,
+      "text": "Magnify the LORD with me, and let us exalt His name together.",
+      "is_standalone_quote": true,
+      "primary_stage": "bright",
+      "mood_tags": [
+        "praise",
+        "fellowship",
+        "joy"
+      ],
+      "humble_reflection_eng": "Worship is sweeter when shared. Take a moment to give thanks alongside those walking beside you.",
+      "category": "Joy & Grateful Praise",
+      "sub_tag": "Morning Light"
+    },
+    "PSA.34.4": {
+      "id": "PSA.34.4",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 4,
+      "text": "I sought the LORD, and He answered me; He delivered me from all my fears.",
+      "is_standalone_quote": true,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "hope",
+        "deliverance",
+        "peace"
+      ],
+      "humble_reflection_eng": "Fears may loom large, but turning our gaze toward God gently dissolves anxiety into resting trust.",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.5": {
+      "id": "PSA.34.5",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 5,
+      "text": "Those who look to Him are radiant with joy; their faces shall never be ashamed.",
+      "is_standalone_quote": true,
+      "primary_stage": "bright",
+      "mood_tags": [
+        "joy",
+        "radiant",
+        "grace"
+      ],
+      "humble_reflection_eng": "Shame loses its power when we fix our eyes on grace rather than our own stumbles.",
+      "category": "Joy & Grateful Praise",
+      "sub_tag": "Morning Light"
+    },
+    "PSA.34.6": {
+      "id": "PSA.34.6",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 6,
+      "text": "This poor man called out, and the LORD heard him; He saved him out of all his troubles.",
+      "is_standalone_quote": true,
+      "primary_stage": "humble",
+      "mood_tags": [
+        "humility",
+        "quiet-trust",
+        "deliverance"
+      ],
+      "humble_reflection_eng": "You do not need impressive words to be heard. God listens with tenderness to the quietest plea.",
+      "category": "Quiet Trust & Humility",
+      "sub_tag": "Still Reflection"
+    },
+    "PSA.34.7": {
+      "id": "PSA.34.7",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 7,
+      "text": "The angel of the LORD encamps around those who fear Him, and He delivers them.",
+      "is_standalone_quote": true,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "protection",
+        "steadfast",
+        "reverence"
+      ],
+      "humble_reflection_eng": "Even when unseen, God surrounds you with unseen protection and faithful mercy.",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.8": {
+      "id": "PSA.34.8",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 8,
+      "text": "Taste and see that the LORD is good; blessed is the man who takes refuge in Him!",
+      "is_standalone_quote": true,
+      "primary_stage": "bright",
+      "mood_tags": [
+        "goodness",
+        "refuge",
+        "joy"
+      ],
+      "humble_reflection_eng": "God's goodness is not just an idea to ponder, but a refuge to experience firsthand today.",
+      "category": "Joy & Grateful Praise",
+      "sub_tag": "Morning Light"
+    },
+    "PSA.34.9": {
+      "id": "PSA.34.9",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 9,
+      "text": "Fear the LORD, you His saints, for those who fear Him lack nothing.",
+      "is_standalone_quote": true,
+      "primary_stage": "humble",
+      "mood_tags": [
+        "reverence",
+        "quiet-trust",
+        "provision"
+      ],
+      "humble_reflection_eng": "Reverence frees us from frantic grasping. God provides what our souls truly need in each season.",
+      "category": "Quiet Trust & Humility",
+      "sub_tag": "Still Reflection"
+    },
+    "PSA.34.10": {
+      "id": "PSA.34.10",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 10,
+      "text": "The young lions lack and suffer hunger, but those who seek the LORD will not lack any good thing.",
+      "is_standalone_quote": true,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "provision",
+        "trust",
+        "hope"
+      ],
+      "humble_reflection_eng": "Human self-reliance eventually grows hungry, but seeking God's presence satisfies the deepest longing.",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.11": {
+      "id": "PSA.34.11",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 11,
+      "text": "Come, children, listen to me; I will teach you the fear of the LORD.",
+      "is_standalone_quote": false,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "instruction",
+        "discipline"
+      ],
+      "humble_reflection_eng": "",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.12": {
+      "id": "PSA.34.12",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 12,
+      "text": "Who is the man who delights in life, who desires many days to see good?",
+      "is_standalone_quote": false,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "wisdom",
+        "questions"
+      ],
+      "humble_reflection_eng": "",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.13": {
+      "id": "PSA.34.13",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 13,
+      "text": "Keep your tongue from evil and your lips from deceitful speech.",
+      "is_standalone_quote": true,
+      "primary_stage": "humble",
+      "mood_tags": [
+        "humility",
+        "gentle",
+        "integrity"
+      ],
+      "humble_reflection_eng": "A gentle word heals where sharp tongue wounds. Guarding our speech brings quiet tranquility to the heart.",
+      "category": "Quiet Trust & Humility",
+      "sub_tag": "Still Reflection"
+    },
+    "PSA.34.14": {
+      "id": "PSA.34.14",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 14,
+      "text": "Turn away from evil and do good; seek peace and pursue it.",
+      "is_standalone_quote": true,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "peace",
+        "growth",
+        "steadfast"
+      ],
+      "humble_reflection_eng": "Peace is not passive silence; it is actively choosing kindness and pursuing reconciliation today.",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.15": {
+      "id": "PSA.34.15",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 15,
+      "text": "The eyes of the LORD are on the righteous, and His ears are inclined to their cry.",
+      "is_standalone_quote": true,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "comfort",
+        "listening",
+        "hope"
+      ],
+      "humble_reflection_eng": "God is never distracted when you whisper your heart's longing; His attention rests gently upon you.",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.16": {
+      "id": "PSA.34.16",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 16,
+      "text": "The face of the LORD is set against those who do evil, to cut off their memory from the earth.",
+      "is_standalone_quote": false,
+      "primary_stage": "gloomy",
+      "mood_tags": [
+        "judgment",
+        "warning"
+      ],
+      "humble_reflection_eng": "",
+      "category": "Comfort in Heavy Seasons",
+      "sub_tag": "Morning Pause"
+    },
+    "PSA.34.17": {
+      "id": "PSA.34.17",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 17,
+      "text": "The righteous cry out, and the LORD hears; He delivers them from all their troubles.",
+      "is_standalone_quote": true,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "deliverance",
+        "hope",
+        "prayer"
+      ],
+      "humble_reflection_eng": "When life feels overwhelming, a simple honest cry reaches the ears of God without delay.",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.18": {
+      "id": "PSA.34.18",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 18,
+      "text": "The LORD is near to the brokenhearted; He saves the contrite in spirit.",
+      "is_standalone_quote": true,
+      "primary_stage": "gloomy",
+      "mood_tags": [
+        "comfort",
+        "brokenhearted",
+        "heavy-day"
+      ],
+      "humble_reflection_eng": "Feeling heartbroken does not mean you are abandoned. God draws closest when your spirit feels crushed and tender.",
+      "category": "Comfort in Heavy Seasons",
+      "sub_tag": "Morning Pause"
+    },
+    "PSA.34.19": {
+      "id": "PSA.34.19",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 19,
+      "text": "Many are the afflictions of the righteous, but the LORD delivers him from them all.",
+      "is_standalone_quote": true,
+      "primary_stage": "gloomy",
+      "mood_tags": [
+        "affliction",
+        "deliverance",
+        "hope"
+      ],
+      "humble_reflection_eng": "Trials do not mean you have lost your way. God's faithfulness remains constant through every storm.",
+      "category": "Comfort in Heavy Seasons",
+      "sub_tag": "Morning Pause"
+    },
+    "PSA.34.20": {
+      "id": "PSA.34.20",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 20,
+      "text": "He protects all his bones; not one of them will be broken.",
+      "is_standalone_quote": false,
+      "primary_stage": "growing",
+      "mood_tags": [
+        "prophecy",
+        "protection"
+      ],
+      "humble_reflection_eng": "",
+      "category": "Steadfast Hope & Growth",
+      "sub_tag": "Daily Walk"
+    },
+    "PSA.34.21": {
+      "id": "PSA.34.21",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 21,
+      "text": "Evil will slay the wicked, and the haters of the righteous will be condemned.",
+      "is_standalone_quote": false,
+      "primary_stage": "gloomy",
+      "mood_tags": [
+        "judgment",
+        "warning"
+      ],
+      "humble_reflection_eng": "",
+      "category": "Comfort in Heavy Seasons",
+      "sub_tag": "Morning Pause"
+    },
+    "PSA.34.22": {
+      "id": "PSA.34.22",
+      "book": "PSA",
+      "chapter": 34,
+      "verse": 22,
+      "text": "The LORD redeems the souls of His servants, and none who take refuge in Him will be condemned.",
+      "is_standalone_quote": true,
+      "primary_stage": "bright",
+      "mood_tags": [
+        "redemption",
+        "refuge",
+        "peace"
+      ],
+      "humble_reflection_eng": "Condemnation has no hold on those resting under God's protective wings. You are redeemed and safe.",
+      "category": "Joy & Grateful Praise",
+      "sub_tag": "Morning Light"
+    }
+  }
+}

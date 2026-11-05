@@ -1,0 +1,266 @@
+[
+  {
+    "id": "PSA.34.18",
+    "book": "PSA",
+    "chapter": 34,
+    "verse": 18,
+    "primary_stage": "gloomy",
+    "mood_tags": ["gloomy", "heavy", "brokenhearted", "comfort"],
+    "category": "Comfort in Heavy Seasons",
+    "sub_tag": "Morning Pause",
+    "texts_by_lang": {
+      "eng": "The Lord is close to the brokenhearted and saves those who are crushed in spirit.",
+      "lus": "LALPA chu thinlung lungchhiatte hnaihah a awm a, rilrua inchhirte chu a chhandam ṭhîn.",
+      "hin": "यहोवा टूटे मन वालों के समीप रहता है, और पिसे हुओं का उद्धार करता है।",
+      "spa": "Cercano está Jehová a los quebrantados de corazón; y salva a los contritos de espíritu."
+    },
+    "reflections_by_lang": {
+      "eng": "Feeling heartbroken does not mean your faith is weak. God does not wait for you to put on a brave face—He draws closest when your spirit feels heavy.",
+      "lus": "I rilru a hah avangin i rinna a chak lo tihna a ni lo. Pathian chuan hlim hmel i put phawt a nghak lo—i rilru a pik lai tak hian I kiangah a awm reng a ni.",
+      "hin": "मन भारी होने का मतलब यह नहीं कि आपका विश्वास कमज़ोर है। ईश्वर आपके मुस्कुराने का इंतज़ार नहीं करते—जब दिल दुखी होता है, वह आपके सबसे करीब होते हैं।",
+      "spa": "Sentirte afligido no significa que tu fe sea débil. Dios no espera que finjas fortaleza; Él se acerca más cuando tu espíritu se siente abrumado."
+    }
+  },
+  {
+    "id": "ECC.7.3",
+    "book": "ECC",
+    "chapter": 7,
+    "verse": 3,
+    "primary_stage": "gloomy",
+    "mood_tags": ["gloomy", "sorrow", "grief", "refining"],
+    "category": "Healing Through Grief",
+    "sub_tag": "Quiet Acceptance",
+    "texts_by_lang": {
+      "eng": "Sorrow is better than laughter, because a sad face is good for the heart.",
+      "lus": "Nuih aiin lungngaih a ṭha zawk; hmel lungngaihna hian rilru a siamṭha ṭhîn.",
+      "hin": "हँसी से शोक उत्तम है, क्योंकि चेहरे की उदासी से मन सुधरता है।",
+      "spa": "Mejor es el pesar que la risa; porque con la tristeza del rostro se enmendará el corazón."
+    },
+    "reflections_by_lang": {
+      "eng": "Sorrow softens what pride makes rigid. Do not hurry past your grief; it often carves out the quiet spaces where compassion and tender wisdom can dwell.",
+      "lus": "Lungngaihna hian thinlung sak tak a tinêm ṭhîn. I lungchhiatna hi hmanhmawh takin tlan pelh tum suh; khawngaihna leh finna hmun ruak a siam mek zawk a ni.",
+      "hin": "उदासी दिल को नर्म बनाती है। अपने दुख से भागने की जल्दी न करें; यह अक्सर भीतर गहरी समझ और करुणा के लिए जगह बनाती है।",
+      "spa": "La tristeza suaviza lo que el orgullo endurece. No te apresures a evadir tu dolor; a menudo abre el espacio silencioso donde nace la compasión."
+    }
+  },
+  {
+    "id": "PSA.42.11",
+    "book": "PSA",
+    "chapter": 42,
+    "verse": 11,
+    "primary_stage": "gloomy",
+    "mood_tags": ["gloomy", "downcast", "hope", "soul"],
+    "category": "When Soul is Downcast",
+    "sub_tag": "Quiet Rest",
+    "texts_by_lang": {
+      "eng": "Why, my soul, are you downcast? Why so disturbed within me? Put your hope in God, for I will yet praise him, my Savior and my God.",
+      "lus": "Ka nunna engah nge i kun reng? Engah nge ka chhungah hian i buai? Pathian chu beisei rawh.",
+      "hin": "हे मेरे प्राण, तू क्यों गिरा जाता है? और अंदर ही अंदर क्यों व्याकुल है? परमेश्वर पर भरोसा रख।",
+      "spa": "¿Por qué te abates, oh alma mía, y por qué te turbas dentro de mí? Espera en Dios; porque aún he de alabarle."
+    },
+    "reflections_by_lang": {
+      "eng": "It is honest and holy to ask your soul why it aches. Hope does not deny sorrow; it simply gives sorrow a hand to hold in the dark.",
+      "lus": "I nunna hnenah a chhan zawh hi thil sual a ni lo. Beiseina chuan lungngaihna a hlamchhiah lo, thim zingah a vuan tlat zawk a ni.",
+      "hin": "अपने दर्द को महसूस करना कमजोरी नहीं है। उम्मीद अंधेरे में भी ईश्वर के हाथ को थामे रखने का नाम है।",
+      "spa": "Es honesto y sagrado reconocer la tristeza de tu alma. La esperanza no niega el dolor; le da una mano segura en la oscuridad."
+    }
+  },
+  {
+    "id": "ROM.5.3",
+    "book": "ROM",
+    "chapter": 5,
+    "verse": 3,
+    "primary_stage": "growing",
+    "mood_tags": ["growing", "perseverance", "character", "hope"],
+    "category": "Endurance in Seasons",
+    "sub_tag": "Steadfast Hope",
+    "texts_by_lang": {
+      "eng": "Not only so, but we also glory in our sufferings, because we know that suffering produces perseverance; perseverance, character; and character, hope.",
+      "lus": "Chu chauh pawh a ni lo, hrehawmnaah pawh kan lawm bawk ṭhîn; hrehawmna chuan chhelna a siam a, chhelna chuan hmuhchhuahna, hmuhchhuahna chuan beiseina a siam tih kan hria.",
+      "hin": "हम क्लेशों में भी घमण्ड करें, यह जानकर कि क्लेश से धीरज, और धीरज से खरा निकलना, और खरे निकलने से आशा उत्पन्न होती है।",
+      "spa": "Y no sólo esto, sino que también nos gloriamos en las tribulaciones, sabiendo que la tribulación produce paciencia; y la paciencia, prueba; y la prueba, esperanza."
+    },
+    "reflections_by_lang": {
+      "eng": "Perseverance is not gritting your teeth in stubbornness; it is taking one honest breath at a time, trusting that endurance is quietly yielding a steadfast heart.",
+      "lus": "Chhelna chu luhlul taka awm a ni lo; zawi muanga thawk lak a, Pathianin thinlung nghet a siam mek tih rinna hi a ni zawk.",
+      "hin": "धैर्य का मतलब सिर्फ सहना नहीं, बल्कि हर पल में भरोसा रखना है कि इस प्रक्रिया से आपका मन और गहरा तथा स्थिर बन रहा है।",
+      "spa": "La perseverancia no es apretar los dientes; es dar un paso sincero a la vez, confiando en que la paciencia forja un corazón firme y sereno."
+    }
+  },
+  {
+    "id": "2CO.12.9",
+    "book": "2CO",
+    "chapter": 12,
+    "verse": 9,
+    "primary_stage": "growing",
+    "mood_tags": ["growing", "grace", "weakness", "patience"],
+    "category": "Strength in Weakness",
+    "sub_tag": "Quiet Growth",
+    "texts_by_lang": {
+      "eng": "My grace is sufficient for you, for my power is made perfect in weakness.",
+      "lus": "Ka khawngaihna i tan a tawk e; ka thiltihtheihna hi chak lohnaah asin tihfamkimin a awm ni.",
+      "hin": "मेरा अनुग्रह तेरे लिये बहुत है; क्योंकि मेरी सामर्थ्य निर्बलता में सिद्ध होती है।",
+      "spa": "Bástate mi gracia; porque mi poder se perfecciona en la debilidad."
+    },
+    "reflections_by_lang": {
+      "eng": "Growth often feels quiet and tender like a seed beneath dark soil. You do not have to carry tomorrow’s burden today; grace is measured for this very moment.",
+      "lus": "Thil ṭhang lai hi lei hnuaia chi nung ang maiin a reh ṭhîn. Naktuk buaina chu vawiinah phur vek kher suh; tun hun atan hian khawngaihna a tawk em em a ni.",
+      "hin": "विकास अक्सर मिट्टी के नीचे बीज की तरह शांत और धीमा होता है। आज ही कल का बोझ उठाने की ज़रूरत नहीं; इस पल के लिए अनुग्रह ही काफी है।",
+      "spa": "El crecimiento suele ser silencioso y tierno como una semilla bajo tierra. No tienes que cargar hoy con el peso de mañana; la gracia basta para este momento."
+    }
+  },
+  {
+    "id": "ISA.40.29",
+    "book": "ISA",
+    "chapter": 40,
+    "verse": 29,
+    "primary_stage": "growing",
+    "mood_tags": ["growing", "strength", "weary", "perseverance"],
+    "category": "Renewing Quiet Strength",
+    "sub_tag": "Gentle Unfolding",
+    "texts_by_lang": {
+      "eng": "He gives strength to the weary and increases the power of the weak.",
+      "lus": "Chauhte chu thahrui a pe ṭhîn a, chakna reng reng nei lote chu chakna a vawrh punsak ṭhîn.",
+      "hin": "वह थके हुए को बल देता है और शक्तिहीन को बहुत सामर्थ्य देता है।",
+      "spa": "Él da esfuerzo al cansado, y multiplica las fuerzas al que no tiene ningunas."
+    },
+    "reflections_by_lang": {
+      "eng": "You do not have to bloom overnight. Rest is not lost time; it is the silent season where roots grow deep enough to sustain tomorrow.",
+      "lus": "Zankhat thilah i ṭhan nghal thut kher a ngai lo. Chawlh hahdam hi hun khawhralna a ni lo, zung a ngheh zualna hun a ni zawk.",
+      "hin": "रातों-रात खिलना ज़रूरी नहीं है। आराम करना समय की बर्बादी नहीं, बल्कि जड़ों को गहरा और मजबूत करने का समय है।",
+      "spa": "No tienes que florecer de la noche a la mañana. El descanso prepara raíces profundas para sostener el mañana."
+    }
+  },
+  {
+    "id": "PSA.118.24",
+    "book": "PSA",
+    "chapter": 118,
+    "verse": 24,
+    "primary_stage": "bright",
+    "mood_tags": ["bright", "rejoice", "gladness", "day"],
+    "category": "Welcoming the Gift",
+    "sub_tag": "Morning Light",
+    "texts_by_lang": {
+      "eng": "This is the day the Lord has made; let us rejoice and be glad in it.",
+      "lus": "Hei hi LALPA siam ni a ni; he mi niah hian hlimin i lawm ang u.",
+      "hin": "यह वही दिन है जो यहोवा ने बनाया है; हम इसमें मगन और आनन्दित हों।",
+      "spa": "Este es el día que hizo Jehová; nos gozaremos y alegraremos en él."
+    },
+    "reflections_by_lang": {
+      "eng": "This day does not need to be flawless to be a gift. Receive the small light streaming through your window, and welcome the gift of being alive right now.",
+      "lus": "Vawiin ni hi thil kim vek a nih kher a ngai lo. I tukverh atanga eng lo lut chu thlir la, i la nung ve reng hi lawmthu sawina chhan a tawk em em a ni.",
+      "hin": "यह दिन परिपूर्ण न भी हो, तो भी यह एक अनमोल वरदान है। धूप की हल्की किरणों को महसूस करें और इस पल जीवित होने के लिए आभारी रहें।",
+      "spa": "Este día no necesita ser perfecto para ser un regalo. Abre tus manos a la luz suave de esta mañana y agradece el simple milagro de respirar."
+    }
+  },
+  {
+    "id": "NUM.6.24",
+    "book": "NUM",
+    "chapter": 6,
+    "verse": 24,
+    "primary_stage": "bright",
+    "mood_tags": ["bright", "blessing", "peace", "gratitude"],
+    "category": "Joy & Abundance",
+    "sub_tag": "Sunlit Gratitude",
+    "texts_by_lang": {
+      "eng": "The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you; the Lord turn his face toward you and give you peace.",
+      "lus": "LALPAN malsawm che sela, vawng ṭha che rawh se; LALPAN a hmel entir che sela, khawngaih che rawh se; LALPAN a hmel chhun tir che sela, thlamuanna pe che rawh se.",
+      "hin": "यहोवा तुझे आशीष दे और तेरी रक्षा करे: यहोवा तुझ पर अपने मुख का प्रकाश चमकाए, और तुझ पर अनुग्रह करे: यहोवा अपना मुख तेरी ओर करे, और तुझे शान्ति दे।",
+      "spa": "Jehová te bendiga, y te guarde; Jehová haga resplandecer su rostro sobre ti, y tenga de ti misericordia; Jehová alce sobre ti su rostro, y ponga en ti paz."
+    },
+    "reflections_by_lang": {
+      "eng": "When gratitude fills your heart, let it spill gently into the world around you. Hold this warmth with open hands, thanking the One who gives every good gift.",
+      "lus": "I thinlung lawmnain a khah lai hian midangte hnenah nem takin puang chhuak rawh. Kut pharh meuhin he duhsakna hi pawm la, thilṭha zawng zawng petu chu fak rawh.",
+      "hin": "जब दिल कृतज्ञता से भर जाए, तो इस सुकून को अपने आस-पास भी बाँटें। हर अच्छी आशीष देने वाले प्रभु का धन्यवाद करें।",
+      "spa": "Cuando la gratitud llena tu corazón, deja que ilumine tu entorno. Recibe esta bendición con manos abiertas, agradeciendo al dador de toda buena dádiva."
+    }
+  },
+  {
+    "id": "PHP.4.4",
+    "book": "PHP",
+    "chapter": 4,
+    "verse": 4,
+    "primary_stage": "bright",
+    "mood_tags": ["bright", "rejoice", "gladness", "celebration"],
+    "category": "Rejoicing in Simplicity",
+    "sub_tag": "Warm Radiance",
+    "texts_by_lang": {
+      "eng": "Rejoice in the Lord always. I will say it again: Rejoice!",
+      "lus": "Lalpaah chuan lawm fo rawh u; ka ti nawn leh ang, Lawm rawh u.",
+      "hin": "प्रभु में सदा आनन्दित रहो; मैं फिर कहता हूँ, आनन्दित रहो।",
+      "spa": "¡Regocijaos en el Señor siempre! Otra vez digo: ¡Regocijaos!"
+    },
+    "reflections_by_lang": {
+      "eng": "Joy in the Lord is not contingent on circumstances; it is an anchored delight in knowing you are seen, held, and endlessly loved.",
+      "lus": "Lalpaa lawmna chu eng dinhmunah pawh a awm thei; Pathian hmangaihna leh enkawlna hriat chianna atanga lo chhuak a ni.",
+      "hin": "सच्चा आनंद परिस्थितियों पर निर्भर नहीं करता; यह इस बात का सुकून है कि ईश्वर आपसे असीम प्रेम करते हैं।",
+      "spa": "El gozo en el Señor no depende de las circunstancias; es el deleite seguro de saberte sostenido y profundamente amado."
+    }
+  },
+  {
+    "id": "MIC.6.8",
+    "book": "MIC",
+    "chapter": 6,
+    "verse": 8,
+    "primary_stage": "humble",
+    "mood_tags": ["humble", "justice", "mercy", "walk"],
+    "category": "Simple Devotion",
+    "sub_tag": "Quiet Walk",
+    "texts_by_lang": {
+      "eng": "He has shown you, O mortal, what is good. And what does the Lord require of you? To act justly and to love mercy and to walk humbly with your God.",
+      "lus": "Aw mihring, ṭha chu a entir tawh che a ni; LALPA phût chu dik taka tih leh khawngaihna ngainat leh, i Pathian nena thuhnuairawlh taka len dun chauh a ni lo vem ni?",
+      "hin": "हे मनुष्य, वह तुझ पर प्रगट कर चुका है कि भला क्या है; और यहोवा तुझ से इसे छोड़ और क्या चाहता है, कि तू न्याय से काम करे, और कृपा से प्रीति रखे, और अपने परमेश्वर के साथ नम्रता से चले?",
+      "spa": "Oh hombre, él te ha declarado lo que es bueno, y qué pide Jehová de ti: solamente hacer justicia, y amar misericordia, y humillarte ante tu Dios."
+    },
+    "reflections_by_lang": {
+      "eng": "Faith is rarely about grand spectacles; it is walking quietly step by step, showing kindness without noise, and resting in the steady guidance of your Maker.",
+      "lus": "Rinna chu thil ropui leh thawm na tak a ni ber lo; thawm nei lova ngilneihna lantir leh, Siamtu hruaina rinchhana thuhnuairawlh taka kal zel hi a ni zawk.",
+      "hin": "विश्वास कोई बड़ा दिखावा नहीं; यह शांति से एक-एक कदम चलना है, बिना शोर के दया दिखाना और अपने ईश्वर के साथ नम्रता से जीना है।",
+      "spa": "La fe rara vez se trata de grandes espectáculos; se trata de caminar paso a paso, practicar la misericordia sin ruido y descansar con humildad en Dios."
+    }
+  },
+  {
+    "id": "PRO.3.5",
+    "book": "PRO",
+    "chapter": 3,
+    "verse": 5,
+    "primary_stage": "humble",
+    "mood_tags": ["humble", "trust", "heart", "guidance"],
+    "category": "Leaning Inwardly on Grace",
+    "sub_tag": "Surrender",
+    "texts_by_lang": {
+      "eng": "Trust in the Lord with all your heart and lean not on your own understanding.",
+      "lus": "I thinlung zawng zawngin LALPA ring la, nangma hriatnaah innghat suh.",
+      "hin": "तू अपनी समझ का सहारा न लेना, वरन सम्पूर्ण मन से यहोवा पर भरोसा रखना।",
+      "spa": "Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia."
+    },
+    "reflections_by_lang": {
+      "eng": "Humility is the sweet relief of admitting you do not have to figure out everything today. Lay down the steering wheel into hands far wiser than your own.",
+      "lus": "Inngaihtlawmna chu engkim i hriat thiam vek kher a ngai lo tih pawm thiamna hi a ni. Nangmah aia fing zawk kutah engkim hlan rawh.",
+      "hin": "विनम्रता इस बात को स्वीकार करने का सुकून है कि आज आपको सब कुछ जानने की ज़रूरत नहीं है। नियंत्रण ईश्वर के हाथों में सौंप दें।",
+      "spa": "La humildad es el dulce alivio de aceptar que hoy no tienes que resolverlo todo. Deja el control en manos infinitamente más sabias."
+    }
+  },
+  {
+    "id": "1PE.5.6",
+    "book": "1PE",
+    "chapter": 5,
+    "verse": 6,
+    "primary_stage": "humble",
+    "mood_tags": ["humble", "anxiety", "care", "rest"],
+    "category": "Casting Cares",
+    "sub_tag": "Gentle Release",
+    "texts_by_lang": {
+      "eng": "Humble yourselves, therefore, under God’s mighty hand, that he may lift you up in due time. Cast all your anxiety on him because he cares for you.",
+      "lus": "Chuvangin, hun bi a lo thlen huna a chawisang theih nan che u, Pathian kut chak tak hnuaiah chuan inngaitlawm rawh u; a ngaihsak che u avangin in manganna zawng zawng a chungah nghat vek rawh u.",
+      "hin": "इसलिये परमेश्वर के बलवन्त हाथ के नीचे दीनता से रहो, जिस से वह तुम्हें उचित समय पर बढ़ाए। अपनी सारी चिन्ता उसी पर डाल दो, क्योंकि उसको तुम्हारा ध्यान है।",
+      "spa": "Humillaos, pues, bajo la poderosa mano de Dios, para que él os exalte cuando fuere tiempo; echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros."
+    },
+    "reflections_by_lang": {
+      "eng": "You do not need to prove your strength or defend your worth today. Quietly hand over every knot in your stomach to the One who watches over you with infinite care.",
+      "lus": "Vawiinah hian i chakzia lantir emaw i hlutna tarlang turin beih vak a ngai lo. I rilru hahna zawng zawng chu hmangaih taka enkawltu Pathian kutah hlan tawp rawh.",
+      "hin": "आज खुद को साबित करने या ताकत दिखाने की कोई ज़रूरत नहीं है। अपनी सारी चिंताओं को उस परमेश्वर पर छोड़ दें जो अत्यंत प्रेम से आपका ख्याल रखते हैं।",
+      "spa": "No necesitas demostrar tu fuerza ni defender tu valor hoy. Entrega con quietud cada preocupación al Creador que cuida de ti con ternura infinita."
+    }
+  }
+]
