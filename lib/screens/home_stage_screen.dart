@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/inshorts_feed_item.dart';
 import '../models/tagged_verse.dart';
 import '../services/bible_api_service.dart';
@@ -55,6 +58,14 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   List<InshortsFeedItem> _displayedItems = [];
   bool _isLoading = true;
 
+  // State for debouncing mouse wheel / trackpad scroll & keyboard navigation
+  bool _isPageAnimating = false;
+  bool _isScrollDebounced = false;
+  double _accumulatedScrollDelta = 0.0;
+  Timer? _scrollResetTimer;
+  Timer? _scrollDebounceTimer;
+  final FocusNode _focusNode = FocusNode();
+
   bool get isLoading => _isLoading;
   PageController get pageController => _pageController;
   ContentFilter get currentFilter => _currentFilter;
@@ -91,6 +102,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   @override
   void dispose() {
+    _scrollResetTimer?.cancel();
+    _scrollDebounceTimer?.cancel();
+    _focusNode.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -221,6 +235,94 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     }
   }
 
+  /// Intercepts mouse wheel / trackpad scroll events and resolves them before
+  /// Flutter's default Scrollable applies erratic fractional offsets.
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is PointerScrollEvent) {
+      if (event.scrollDelta.dy.abs() > 0 && event.scrollDelta.dy.abs() >= event.scrollDelta.dx.abs()) {
+        GestureBinding.instance.pointerSignalResolver.register(event, (resolvedEvent) {
+          if (resolvedEvent is PointerScrollEvent) {
+            _handleDebouncedPointerScroll(resolvedEvent.scrollDelta.dy);
+          }
+        });
+      }
+    }
+  }
+
+  /// Debounces rapid scroll wheel notches and trackpad momentum, smoothly
+  /// animating to the target card once threshold is reached without stutter.
+  void _handleDebouncedPointerScroll(double dy) {
+    if (!_pageController.hasClients || _displayedItems.isEmpty || dy == 0) return;
+
+    // Reset accumulated delta if user pauses scrolling
+    _scrollResetTimer?.cancel();
+    _scrollResetTimer = Timer(const Duration(milliseconds: 200), () {
+      _accumulatedScrollDelta = 0.0;
+    });
+
+    // If scrolling direction reverses, reset accumulator so new direction responds immediately
+    if ((_accumulatedScrollDelta > 0 && dy < 0) || (_accumulatedScrollDelta < 0 && dy > 0)) {
+      _accumulatedScrollDelta = 0.0;
+    }
+
+    // Ignore events while animation is active or during debounce cooldown
+    if (_isPageAnimating || _isScrollDebounced) {
+      return;
+    }
+
+    _accumulatedScrollDelta += dy;
+
+    // A threshold of 20dp triggers immediately for discrete wheel clicks (typically 20-50dp),
+    // while aggregating continuous trackpad swipes before firing a clean transition.
+    const double threshold = 20.0;
+    if (_accumulatedScrollDelta.abs() >= threshold) {
+      final direction = _accumulatedScrollDelta > 0 ? 1 : -1;
+      _accumulatedScrollDelta = 0.0;
+
+      final currentPage = _pageController.page?.round() ?? _pageController.initialPage;
+      final targetPage = (currentPage + direction).clamp(0, _displayedItems.length - 1);
+
+      // If already at boundary in this direction, do not lock out scrolls in the valid direction
+      if (targetPage == currentPage) {
+        return;
+      }
+
+      _isScrollDebounced = true;
+      _scrollDebounceTimer?.cancel();
+      _scrollDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _isScrollDebounced = false;
+        }
+      });
+      _animateToRelativePage(direction);
+    }
+  }
+
+  /// Smoothly animates the feed by [offset] pages (e.g. +1 for next, -1 for previous).
+  Future<void> _animateToRelativePage(int offset) async {
+    if (_isPageAnimating || !_pageController.hasClients || _displayedItems.isEmpty) return;
+
+    final currentPage = _pageController.page?.round() ?? _pageController.initialPage;
+    final targetPage = (currentPage + offset).clamp(0, _displayedItems.length - 1);
+
+    if (targetPage == currentPage) return;
+
+    _isPageAnimating = true;
+    try {
+      await _pageController.animateToPage(
+        targetPage,
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeOutCubic,
+      );
+    } catch (_) {
+      // Ignored
+    } finally {
+      if (mounted) {
+        _isPageAnimating = false;
+      }
+    }
+  }
+
   void _showGentleNotice(String message, StagePalette palette) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -287,106 +389,146 @@ class HomeStageScreenState extends State<HomeStageScreen> {
               final isShort = constraints.maxHeight < 600 || textScale > 1.25;
               final isVeryShort = constraints.maxHeight < 460;
               final isNarrow = constraints.maxWidth < 340 || textScale > 1.25;
-              final horizontalPadding = isNarrow ? 10.0 : 20.0;
+              final isWide = constraints.maxWidth >= 720;
+              final horizontalPadding = isNarrow ? 10.0 : (isWide ? 24.0 : 20.0);
 
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 540.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Top Bar with App Title, Filter Toggle, and Language Selector
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          isVeryShort ? 4.0 : (isShort ? 6.0 : 12.0),
-                          horizontalPadding,
-                          0.0,
-                        ),
-                        child: _buildHeaderBar(
-                          palette,
-                          isShort: isShort,
-                          isVeryShort: isVeryShort,
-                          isNarrow: isNarrow,
-                        ),
+              return Focus(
+                focusNode: _focusNode,
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                    if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+                        event.logicalKey == LogicalKeyboardKey.pageDown ||
+                        (event.logicalKey == LogicalKeyboardKey.space &&
+                            !HardwareKeyboard.instance.isShiftPressed)) {
+                      _animateToRelativePage(1);
+                      return KeyEventResult.handled;
+                    } else if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+                        event.logicalKey == LogicalKeyboardKey.pageUp ||
+                        (event.logicalKey == LogicalKeyboardKey.space &&
+                            HardwareKeyboard.instance.isShiftPressed)) {
+                      _animateToRelativePage(-1);
+                      return KeyEventResult.handled;
+                    }
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Top Bar with App Title, Filter Toggle, and Language Selector
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        isVeryShort ? 4.0 : (isShort ? 6.0 : 12.0),
+                        horizontalPadding,
+                        0.0,
                       ),
-                      SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
-
-                      // "How is your heart today?" mood chips
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                        child: _buildMoodSection(
-                          palette,
-                          isShort: isShort,
-                          isVeryShort: isVeryShort,
-                          isNarrow: isNarrow,
-                          textScale: textScale,
-                        ),
+                      child: _buildHeaderBar(
+                        palette,
+                        isShort: isShort,
+                        isVeryShort: isVeryShort,
+                        isNarrow: isNarrow,
                       ),
-                      SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
+                    ),
+                    SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
 
-                      // Vertical Inshorts-style PageView middle feed
-                      Expanded(
-                        child: _isLoading
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(palette.accent),
-                                ),
-                              )
-                            : _displayedItems.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'No moments found in this section.',
-                                      style: TextStyle(
-                                        fontSize: 14.0,
-                                        color: palette.secondaryText,
+                    // "How is your heart today?" mood chips
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: _buildMoodSection(
+                        palette,
+                        isShort: isShort,
+                        isVeryShort: isVeryShort,
+                        isNarrow: isNarrow,
+                        textScale: textScale,
+                      ),
+                    ),
+                    SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
+
+                    // Vertical Inshorts-style PageView middle feed
+                    Expanded(
+                      child: _isLoading
+                          ? Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(palette.accent),
+                              ),
+                            )
+                          : _displayedItems.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No moments found in this section.',
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: palette.secondaryText,
+                                    ),
+                                  ),
+                                )
+                              : Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: ScrollConfiguration(
+                                        behavior: ScrollConfiguration.of(context).copyWith(
+                                          dragDevices: {
+                                            PointerDeviceKind.touch,
+                                            PointerDeviceKind.mouse,
+                                            PointerDeviceKind.trackpad,
+                                            PointerDeviceKind.stylus,
+                                          },
+                                        ),
+                                        child: PageView.builder(
+                                          scrollDirection: Axis.vertical,
+                                          pageSnapping: true,
+                                          physics: const BouncingScrollPhysics(),
+                                          controller: _pageController,
+                                          onPageChanged: _onPageChanged,
+                                          itemCount: _displayedItems.length,
+                                          itemBuilder: (context, index) {
+                                            final item = _displayedItems[index];
+                                            final isBookmarked = _bookmarkedIds.contains(item.id);
+
+                                            return InshortsStageCard(
+                                              key: ValueKey('${item.id}_$_selectedLanguage'),
+                                              item: item,
+                                              palette: item.stage.palette,
+                                              isBookmarked: isBookmarked,
+                                              langCode: _selectedLanguage,
+                                              onBookmarkToggle: () {
+                                                final wasSaved = _bookmarkedIds.contains(item.id);
+                                                setState(() {
+                                                  if (wasSaved) {
+                                                    _bookmarkedIds.remove(item.id);
+                                                  } else {
+                                                    _bookmarkedIds.add(item.id);
+                                                  }
+                                                });
+                                                final message = !wasSaved
+                                                    ? 'Saved to your quiet sanctuary'
+                                                    : 'Removed from saved moments';
+                                                _showGentleNotice(message, item.stage.palette);
+                                              },
+                                              onShare: () {
+                                                _showGentleNotice(
+                                                  'Copied to share gentle comfort',
+                                                  item.stage.palette,
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
-                                  )
-                                : PageView.builder(
-                                    scrollDirection: Axis.vertical,
-                                    pageSnapping: true,
-                                    physics: const BouncingScrollPhysics(),
-                                    controller: _pageController,
-                                    onPageChanged: _onPageChanged,
-                                    itemCount: _displayedItems.length,
-                                    itemBuilder: (context, index) {
-                                      final item = _displayedItems[index];
-                                      final isBookmarked = _bookmarkedIds.contains(item.id);
-
-                                      return InshortsStageCard(
-                                        key: ValueKey('${item.id}_$_selectedLanguage'),
-                                        item: item,
-                                        palette: item.stage.palette,
-                                        isBookmarked: isBookmarked,
-                                        langCode: _selectedLanguage,
-                                        onBookmarkToggle: () {
-                                          final wasSaved = _bookmarkedIds.contains(item.id);
-                                          setState(() {
-                                            if (wasSaved) {
-                                              _bookmarkedIds.remove(item.id);
-                                            } else {
-                                              _bookmarkedIds.add(item.id);
-                                            }
-                                          });
-                                          final message = !wasSaved
-                                              ? 'Saved to your quiet sanctuary'
-                                              : 'Removed from saved moments';
-                                          _showGentleNotice(message, item.stage.palette);
-                                        },
-                                        onShare: () {
-                                          _showGentleNotice(
-                                            'Copied to share gentle comfort',
-                                            item.stage.palette,
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                      ),
-                    ],
-                  ),
+                                    Positioned.fill(
+                                      child: Listener(
+                                        behavior: HitTestBehavior.translucent,
+                                        onPointerSignal: _onPointerSignal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -881,7 +1023,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     );
   }
 
-  /// Contemplative bottom navigation bar, centered with maxWidth constraint on wide viewports.
+  /// Contemplative bottom navigation bar occupying the full width of the screen.
   Widget _buildBottomNav(
     StagePalette palette, {
     bool isShort = false,
@@ -899,55 +1041,48 @@ class HomeStageScreenState extends State<HomeStageScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: Align(
-          alignment: Alignment.center,
-          heightFactor: 1.0,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 540.0),
-            child: BottomNavigationBar(
-              currentIndex: _currentNavIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentNavIndex = index;
-                });
-                if (index == 1) {
-                  loadRandomDailyVerse();
-                }
-              },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              iconSize: isVeryShort ? 18.0 : (isShort ? 20.0 : 24.0),
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: palette.accent,
-              unselectedItemColor: palette.secondaryText.withValues(alpha: 0.75),
-              selectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
-              unselectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.spa_outlined),
-                  activeIcon: Icon(Icons.spa),
-                  label: 'Today',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.menu_book_outlined),
-                  activeIcon: Icon(Icons.menu_book),
-                  label: 'Reflect',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.edit_note_outlined),
-                  activeIcon: Icon(Icons.edit_note),
-                  label: 'Journal',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.psychology_alt_outlined),
-                  activeIcon: Icon(Icons.psychology_alt),
-                  label: 'Feelings',
-                ),
-              ],
+        child: BottomNavigationBar(
+          currentIndex: _currentNavIndex,
+          onTap: (index) {
+            setState(() {
+              _currentNavIndex = index;
+            });
+            if (index == 1) {
+              loadRandomDailyVerse();
+            }
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconSize: isVeryShort ? 18.0 : (isShort ? 20.0 : 24.0),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: palette.accent,
+          unselectedItemColor: palette.secondaryText.withValues(alpha: 0.75),
+          selectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
+          unselectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.spa_outlined),
+              activeIcon: Icon(Icons.spa),
+              label: 'Today',
             ),
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book_outlined),
+              activeIcon: Icon(Icons.menu_book),
+              label: 'Reflect',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.edit_note_outlined),
+              activeIcon: Icon(Icons.edit_note),
+              label: 'Journal',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.psychology_alt_outlined),
+              activeIcon: Icon(Icons.psychology_alt),
+              label: 'Feelings',
+            ),
+          ],
         ),
       ),
     );

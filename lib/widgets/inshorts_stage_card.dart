@@ -34,10 +34,11 @@ class InshortsStageCard extends StatelessWidget {
         final isShort = cardHeight < 440 || textScale > 1.25;
         final isVeryShort = cardHeight < 340 || (cardHeight < 400 && textScale > 1.25);
         final isNarrow = constraints.maxWidth < 320 || textScale > 1.25;
+        final isWide = constraints.maxWidth >= 720;
 
         return Container(
           margin: EdgeInsets.symmetric(
-            horizontal: isNarrow ? 8.0 : 16.0,
+            horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
             vertical: isShort ? 4.0 : 8.0,
           ),
           decoration: BoxDecoration(
@@ -67,6 +68,7 @@ class InshortsStageCard extends StatelessWidget {
                     isShort: isShort,
                     isVeryShort: isVeryShort,
                     isNarrow: isNarrow,
+                    isWide: isWide,
                   ),
                 ),
 
@@ -81,6 +83,7 @@ class InshortsStageCard extends StatelessWidget {
                     isShort: isShort,
                     isVeryShort: isVeryShort,
                     isNarrow: isNarrow,
+                    isWide: isWide,
                   ),
                 ),
               ],
@@ -97,12 +100,13 @@ class InshortsStageCard extends StatelessWidget {
     required bool isShort,
     required bool isVeryShort,
     required bool isNarrow,
+    bool isWide = false,
   }) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        isNarrow ? 12.0 : 20.0,
+        isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
         isVeryShort ? 6.0 : (isShort ? 10.0 : 18.0),
-        isNarrow ? 12.0 : 20.0,
+        isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
         isVeryShort ? 4.0 : (isShort ? 6.0 : 10.0),
       ),
       child: Column(
@@ -402,13 +406,14 @@ class InshortsStageCard extends StatelessWidget {
     required bool isShort,
     required bool isVeryShort,
     required bool isNarrow,
+    bool isWide = false,
   }) {
     return Container(
       color: palette.cardSurface.withValues(alpha: 0.7),
       padding: EdgeInsets.fromLTRB(
-        isNarrow ? 12.0 : 20.0,
+        isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
         isVeryShort ? 5.0 : (isShort ? 8.0 : 14.0),
-        isNarrow ? 12.0 : 20.0,
+        isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
         isVeryShort ? 3.0 : (isShort ? 4.0 : 8.0),
       ),
       child: Column(

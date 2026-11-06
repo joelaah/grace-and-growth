@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bible_glory/screens/home_stage_screen.dart';
 import 'package:bible_glory/theme/mood_stage_theme.dart';
@@ -263,7 +265,7 @@ void main() {
       expect(find.byType(InshortsStageCard), findsWidgets);
     });
 
-    testWidgets('Renders centered within 540dp maxWidth on 1024x768 tablet viewport', (tester) async {
+    testWidgets('Renders full width with comfortable margins (20-32dp) on 1024x768 tablet viewport', (tester) async {
       tester.view.physicalSize = const Size(1024, 768);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -275,12 +277,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      final cardBox = tester.getRect(find.byType(InshortsStageCard).first);
-      expect(cardBox.width, lessThanOrEqualTo(540.0));
-      expect(cardBox.left, greaterThan(200.0));
+      final cardWidget = tester.getRect(find.byType(InshortsStageCard).first);
+      // InshortsStageCard occupies full page width
+      expect(cardWidget.width, equals(1024.0));
+
+      // Inner card surface has comfortable margins (20-32dp, 24dp) + 1dp border
+      final cardSurface = tester.getRect(
+        find.descendant(of: find.byType(InshortsStageCard).first, matching: find.byType(ClipRRect)).first,
+      );
+      expect(cardSurface.width, equals(1024.0 - 50.0));
+      expect(cardSurface.left, equals(25.0));
+      expect(cardSurface.right, equals(999.0));
     });
 
-    testWidgets('Renders centered within 540dp maxWidth on 1920x1080 desktop viewport', (tester) async {
+    testWidgets('Renders full width with comfortable margins (20-32dp) on 1920x1080 desktop viewport', (tester) async {
       tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -292,9 +302,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      final cardBox = tester.getRect(find.byType(InshortsStageCard).first);
-      expect(cardBox.width, lessThanOrEqualTo(540.0));
-      expect(cardBox.left, greaterThan(600.0));
+      final cardWidget = tester.getRect(find.byType(InshortsStageCard).first);
+      // InshortsStageCard occupies full page width
+      expect(cardWidget.width, equals(1920.0));
+
+      // Inner card surface has comfortable margins (20-32dp, 24dp) + 1dp border
+      final cardSurface = tester.getRect(
+        find.descendant(of: find.byType(InshortsStageCard).first, matching: find.byType(ClipRRect)).first,
+      );
+      expect(cardSurface.width, equals(1920.0 - 50.0));
+      expect(cardSurface.left, equals(25.0));
+      expect(cardSurface.right, equals(1895.0));
     });
 
     testWidgets('Renders without overflow under 1.5x accessibility text scaling', (tester) async {
@@ -416,6 +434,240 @@ void main() {
 
       final newPage = state.pageController.page ?? 0;
       expect(newPage, greaterThan(initialPage));
+    });
+
+    testWidgets('Mouse wheel scroll debounces and cleanly animates card transitions', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Multiple rapid scroll wheel events from a single wheel spin burst
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 50),
+        ),
+      );
+      await tester.pump();
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 40),
+        ),
+      );
+      await tester.pump();
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 40),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Because rapid burst ticks were debounced, it cleanly advances 1 card to page 1 (not page 3)
+      expect(state.pageController.page?.round(), equals(1));
+
+      // Subsequent intentional scroll wheel event advances to page 2
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 50),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), equals(2));
+
+      // Scroll mouse wheel up returns to previous card
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, -50),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), equals(1));
+    });
+
+    testWidgets('Keyboard arrow keys (Down / Up) navigate cards cleanly', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Press ArrowDown
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), equals(1));
+
+      // Press PageDown
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), equals(2));
+
+      // Press ArrowUp
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), equals(1));
+    });
+
+    testWidgets('Mouse drag cleanly scrolls PageView on desktop', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Perform a mouse drag gesture
+      await tester.drag(
+        find.byType(PageView),
+        const Offset(0, -450),
+        kind: PointerDeviceKind.mouse,
+      );
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), greaterThan(0));
+    });
+
+    testWidgets('Scrolling up at top boundary does not lock out immediate downward scroll', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Attempt to scroll up past top boundary (page 0)
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, -60),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Immediate downward scroll must NOT be locked out by a boundary debounce timer
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 50),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(state.pageController.page?.round(), equals(1));
+    });
+
+    testWidgets('Rapid direction reversal in scroll wheel resets accumulation cleanly', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // First advance to page 1
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 50),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(state.pageController.page?.round(), equals(1));
+
+      // User nudges down slightly (+10dp, below 20dp threshold)
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, 10),
+        ),
+      );
+      await tester.pump();
+
+      // User immediately reverses and scrolls up with -25dp
+      // With reversal reset, the -25dp should immediately overcome threshold (not reduced to -15dp)
+      await tester.sendEventToBinding(
+        const PointerScrollEvent(
+          position: Offset(512, 384),
+          scrollDelta: Offset(0, -25),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Returns cleanly to page 0
+      expect(state.pageController.page?.round(), equals(0));
+    });
+
+    testWidgets('Keyboard navigation persists and works after clicking a mood chip', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Tap a mood chip ("Bright & Grateful")
+      await tester.tap(find.text('Bright & Grateful'));
+      await tester.pumpAndSettle();
+
+      // Arrow down should still be handled because Focus wraps the main layout
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+
+      expect(state.pageController.page?.round(), greaterThan(0));
     });
   });
 }

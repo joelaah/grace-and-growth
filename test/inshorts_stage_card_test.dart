@@ -268,5 +268,52 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('INSPIRATIONAL QUOTE'), findsOneWidget);
     });
+
+    testWidgets('Renders with symmetric 28dp padding and 24dp margin on wide screens', (tester) async {
+      final verseItem = InshortsFeedItem.fromVerse(testVerse, langCode: 'eng');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 1024,
+              height: 768,
+              child: InshortsStageCard(
+                item: verseItem,
+                palette: StagePalette.gloomy,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      // Verify card container margin is 24dp horizontal
+      final cardContainer = tester.widget<Container>(find.byType(Container).first);
+      expect(cardContainer.margin, equals(const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0)));
+
+      // Find top section and bottom section containers
+      // Top section has padding: EdgeInsets.fromLTRB(28, 18, 28, 10)
+      final topSectionFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.padding is EdgeInsets) {
+          final p = widget.padding as EdgeInsets;
+          return p.left == 28.0 && p.right == 28.0 && p.top == 18.0;
+        }
+        return false;
+      });
+      expect(topSectionFinder, findsOneWidget);
+
+      // Bottom section has padding: EdgeInsets.fromLTRB(28, 14, 28, 8)
+      final bottomSectionFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.padding is EdgeInsets) {
+          final p = widget.padding as EdgeInsets;
+          return p.left == 28.0 && p.right == 28.0 && p.top == 14.0;
+        }
+        return false;
+      });
+      expect(bottomSectionFinder, findsOneWidget);
+    });
   });
 }
