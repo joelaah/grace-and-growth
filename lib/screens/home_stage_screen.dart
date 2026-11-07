@@ -6,9 +6,11 @@ import '../models/inshorts_feed_item.dart';
 import '../models/tagged_verse.dart';
 import '../services/bible_api_service.dart';
 import '../services/mood_matching_engine.dart';
+import '../services/mystery_box_engine.dart';
 import '../services/quote_api_service.dart';
 import '../theme/mood_stage_theme.dart';
 import '../widgets/inshorts_stage_card.dart';
+import '../widgets/mystery_box_modal.dart';
 
 /// Content filter options for the Inshorts vertical swipe feed.
 enum ContentFilter {
@@ -25,6 +27,7 @@ class HomeStageScreen extends StatefulWidget {
   final MoodMatchingEngine? moodMatchingEngine;
   final BibleApiService? bibleApiService;
   final QuoteApiService? quoteApiService;
+  final MysteryBoxEngine? mysteryBoxEngine;
   final MoodStage initialStage;
 
   const HomeStageScreen({
@@ -32,6 +35,7 @@ class HomeStageScreen extends StatefulWidget {
     this.moodMatchingEngine,
     this.bibleApiService,
     this.quoteApiService,
+    this.mysteryBoxEngine,
     this.initialStage = MoodStage.gloomy,
   });
 
@@ -50,6 +54,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   late final BibleApiService _bibleApiService;
   late final MoodMatchingEngine _moodMatchingEngine;
   late final QuoteApiService _quoteApiService;
+  late final MysteryBoxEngine _mysteryBoxEngine;
   late final PageController _pageController;
 
   List<TaggedVerse> _allVerses = [];
@@ -81,6 +86,11 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     _moodMatchingEngine = widget.moodMatchingEngine ??
         MoodMatchingEngine(bibleApiService: _bibleApiService);
     _quoteApiService = widget.quoteApiService ?? QuoteApiService();
+    _mysteryBoxEngine = widget.mysteryBoxEngine ??
+        MysteryBoxEngine(
+          moodMatchingEngine: _moodMatchingEngine,
+          quoteApiService: _quoteApiService,
+        );
 
     // Immediately seed with curated in-memory verses and quotes so the feed is instantly available
     _allVerses = MoodMatchingEngine.defaultSeedVerses;
@@ -539,6 +549,81 @@ class HomeStageScreenState extends State<HomeStageScreen> {
         palette,
         isShort: isShortScreen,
         isVeryShort: isVeryShortScreen,
+      ),
+      floatingActionButton: _buildForYouFloatingButton(palette),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  /// Floating "For You" mystery box button opening the [MysteryBoxModal] for [activeStage].
+  Widget _buildForYouFloatingButton(StagePalette palette) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          MysteryBoxModal.show(
+            context,
+            activeMood: activeStage,
+            langCode: _selectedLanguage,
+            mysteryBoxEngine: _mysteryBoxEngine,
+            isItemBookmarked: (item) => _bookmarkedIds.contains(item.id),
+            onBookmarkToggle: (item) {
+              final wasSaved = _bookmarkedIds.contains(item.id);
+              setState(() {
+                if (wasSaved) {
+                  _bookmarkedIds.remove(item.id);
+                } else {
+                  _bookmarkedIds.add(item.id);
+                }
+              });
+              final message = !wasSaved
+                  ? 'Saved to your quiet sanctuary'
+                  : 'Removed from saved moments';
+              _showGentleNotice(message, item.stage.palette);
+            },
+            onShare: (item) {
+              _showGentleNotice(
+                'Copied to share gentle comfort',
+                item.stage.palette,
+              );
+            },
+          );
+        },
+        borderRadius: BorderRadius.circular(28.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 9.0),
+          decoration: BoxDecoration(
+            color: palette.accent,
+            borderRadius: BorderRadius.circular(28.0),
+            boxShadow: [
+              BoxShadow(
+                color: palette.accent.withValues(alpha: 0.35),
+                blurRadius: 10.0,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.inventory_2_outlined,
+                size: 16.0,
+                color: Colors.white,
+              ),
+              SizedBox(width: 5.0),
+              Text(
+                'For You',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
