@@ -6,6 +6,7 @@ import '../services/quote_api_service.dart';
 import '../theme/mood_stage_theme.dart';
 import '../utils/daily_selection_engine.dart';
 import '../widgets/contemplation_timer.dart';
+import '../widgets/notification_time_picker.dart';
 
 /// The "Today" tab screen showing daily curated content and contemplation tools.
 ///
@@ -98,11 +99,38 @@ class _TodayScreenState extends State<TodayScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section: Verse of the Day
-          _buildSectionHeader(
-            palette,
-            icon: Icons.auto_stories_outlined,
-            title: 'Verse of the Day',
+          // Section: Verse of the Day with Reminder quick-action
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSectionHeader(
+                palette,
+                icon: Icons.auto_stories_outlined,
+                title: 'Verse of the Day',
+              ),
+              InkWell(
+                onTap: () => NotificationTimePickerModal.show(context, palette),
+                borderRadius: BorderRadius.circular(16.0),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
+                      const SizedBox(width: 4.0),
+                      Text(
+                        'Reminder',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          color: palette.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           if (todaysVerse != null)

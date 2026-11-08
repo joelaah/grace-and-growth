@@ -39,7 +39,7 @@ jobs:
           flutter test
 
       - name: Build Web Application
-        run: flutter build web --release --base-href "/grace-and-growth/"
+        run: flutter build web --release --base-href "/grace-and-growth/" --web-renderer canvaskit
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -10,9 +10,12 @@ import '../services/journal_storage.dart';
 import '../services/mood_matching_engine.dart';
 import '../services/mystery_box_engine.dart';
 import '../services/quote_api_service.dart';
+import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
+import '../utils/parallax_card_effect.dart';
 import '../widgets/inshorts_stage_card.dart';
 import '../widgets/mystery_box_modal.dart';
+import '../widgets/notification_time_picker.dart';
 import 'today_screen.dart';
 import 'journal_screen.dart';
 import 'feelings_screen.dart';
@@ -123,6 +126,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   @override
   void dispose() {
+    TtsService().stop();
     _scrollResetTimer?.cancel();
     _scrollDebounceTimer?.cancel();
     _focusNode.dispose();
@@ -278,6 +282,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   /// Called on every vertical swipe in the [PageView.builder].
   void _onPageChanged(int index) {
+    TtsService().stop();
     if (index >= 0 && index < _displayedItems.length) {
       final currentCard = _displayedItems[index];
       if (activeStage != currentCard.stage) {
@@ -613,32 +618,52 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                 final item = _displayedItems[index];
                 final isBookmarked = _bookmarkedIds.contains(item.id);
 
-                return InshortsStageCard(
-                  key: ValueKey('${item.id}_$_selectedLanguage'),
-                  item: item,
-                  palette: item.stage.palette,
-                  isBookmarked: isBookmarked,
-                  langCode: _selectedLanguage,
-                  onBookmarkToggle: () {
-                    final wasSaved = _bookmarkedIds.contains(item.id);
-                    setState(() {
-                      if (wasSaved) {
-                        _bookmarkedIds.remove(item.id);
-                      } else {
-                        _bookmarkedIds.add(item.id);
-                      }
-                    });
-                    final message = !wasSaved
-                        ? 'Saved to your quiet sanctuary'
-                        : 'Removed from saved moments';
-                    _showGentleNotice(message, item.stage.palette);
-                  },
-                  onShare: () {
-                    _showGentleNotice(
-                      'Copied to share gentle comfort',
-                      item.stage.palette,
+                return AnimatedBuilder(
+                  animation: _pageController,
+                  builder: (context, child) {
+                    final metrics = ParallaxCardEffect.calculate(
+                      pageController: _pageController,
+                      index: index,
+                    );
+                    return Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001)
+                        ..scale(metrics.scale, metrics.scale)
+                        ..translate(0.0, metrics.translationY),
+                      child: Opacity(
+                        opacity: metrics.opacity,
+                        child: child,
+                      ),
                     );
                   },
+                  child: InshortsStageCard(
+                    key: ValueKey('${item.id}_$_selectedLanguage'),
+                    item: item,
+                    palette: item.stage.palette,
+                    isBookmarked: isBookmarked,
+                    langCode: _selectedLanguage,
+                    onBookmarkToggle: () {
+                      final wasSaved = _bookmarkedIds.contains(item.id);
+                      setState(() {
+                        if (wasSaved) {
+                          _bookmarkedIds.remove(item.id);
+                        } else {
+                          _bookmarkedIds.add(item.id);
+                        }
+                      });
+                      final message = !wasSaved
+                          ? 'Saved to your quiet sanctuary'
+                          : 'Removed from saved moments';
+                      _showGentleNotice(message, item.stage.palette);
+                    },
+                    onShare: () {
+                      _showGentleNotice(
+                        'Preparing gentle card to share',
+                        item.stage.palette,
+                      );
+                    },
+                  ),
                 );
               },
             ),
@@ -796,6 +821,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                     ),
                   ),
                   _buildThemeToggle(palette),
+                  const SizedBox(width: 2.0),
+                  _buildNotificationButton(palette),
                 ],
               ),
               SizedBox(height: isVeryShort ? 4.0 : 6.0),
@@ -881,6 +908,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
                 const SizedBox(width: 4.0),
                 _buildThemeToggle(palette),
+                const SizedBox(width: 2.0),
+                _buildNotificationButton(palette),
                 const SizedBox(width: 4.0),
 
                 Flexible(
@@ -929,6 +958,28 @@ class HomeStageScreenState extends State<HomeStageScreen> {
             padding: const EdgeInsets.all(6),
             child: Icon(
               icon,
+              size: 18,
+              color: palette.secondaryText,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Daily reminder notification modal trigger.
+  Widget _buildNotificationButton(StagePalette palette) {
+    return Tooltip(
+      message: 'Daily Reminder',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => NotificationTimePickerModal.show(context, palette),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              Icons.notifications_none_rounded,
               size: 18,
               color: palette.secondaryText,
             ),

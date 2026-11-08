@@ -1,12 +1,12 @@
 {
-    "name": "bible_glory",
-    "short_name": "bible_glory",
+    "name": "Grace & Growth - Daily Sanctuary",
+    "short_name": "Grace & Growth",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#181E2C",
+    "theme_color": "#E6B87D",
+    "description": "A contemplative daily sanctuary for Scripture and gentle reflection.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

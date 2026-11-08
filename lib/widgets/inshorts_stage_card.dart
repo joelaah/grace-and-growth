@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/inshorts_feed_item.dart';
+import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
+import 'shareable_card.dart';
 
 /// An Inshorts-style split stage card blending Scripture passages and inspirational quotes.
 ///
 /// Top 55%: Source badge, main quote/verse in editorial serif font, and reference/author.
-/// Divider line: Floating Bookmark and Share buttons.
+/// Divider line: Floating Listen, Bookmark, and Share buttons.
 /// Bottom 45%: "A Gentle Thought" humble reflection + subtle "Swipe up for next" indicator.
-class InshortsStageCard extends StatelessWidget {
+class InshortsStageCard extends StatefulWidget {
   final InshortsFeedItem item;
   final StagePalette palette;
   final bool isBookmarked;
@@ -26,7 +28,16 @@ class InshortsStageCard extends StatelessWidget {
   });
 
   @override
+  State<InshortsStageCard> createState() => _InshortsStageCardState();
+}
+
+class _InshortsStageCardState extends State<InshortsStageCard> {
+  final GlobalKey _cardBoundaryKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
+    final palette = widget.palette;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardHeight = constraints.maxHeight;
@@ -36,57 +47,60 @@ class InshortsStageCard extends StatelessWidget {
         final isNarrow = constraints.maxWidth < 320 || textScale > 1.25;
         final isWide = constraints.maxWidth >= 720;
 
-        return Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
-            vertical: isShort ? 4.0 : 8.0,
-          ),
-          decoration: BoxDecoration(
-            color: palette.cardSurface,
-            borderRadius: BorderRadius.circular(24.0),
-            border: Border.all(
-              color: palette.cardBorder.withValues(alpha: 0.75),
-              width: 1.0,
+        return RepaintBoundary(
+          key: _cardBoundaryKey,
+          child: Container(
+            margin: EdgeInsets.symmetric(
+              horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
+              vertical: isShort ? 4.0 : 8.0,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 20.0,
-                offset: const Offset(0, 6),
+            decoration: BoxDecoration(
+              color: palette.cardSurface,
+              borderRadius: BorderRadius.circular(24.0),
+              border: Border.all(
+                color: palette.cardBorder.withValues(alpha: 0.75),
+                width: 1.0,
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24.0),
-            child: Column(
-              children: [
-                // Top 55%: Source badge, main text in serif, and reference/author
-                Expanded(
-                  flex: 55,
-                  child: _buildTopSection(
-                    context,
-                    isShort: isShort,
-                    isVeryShort: isVeryShort,
-                    isNarrow: isNarrow,
-                    isWide: isWide,
-                  ),
-                ),
-
-                // Divider line with floating Bookmark and Share buttons
-                _buildFloatingActionDivider(),
-
-                // Bottom 45%: "A Gentle Thought" reflection + "Swipe up for next" indicator
-                Expanded(
-                  flex: 45,
-                  child: _buildBottomSection(
-                    context,
-                    isShort: isShort,
-                    isVeryShort: isVeryShort,
-                    isNarrow: isNarrow,
-                    isWide: isWide,
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 20.0,
+                  offset: const Offset(0, 6),
                 ),
               ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24.0),
+              child: Column(
+                children: [
+                  // Top 55%: Source badge, main text in serif, and reference/author
+                  Expanded(
+                    flex: 55,
+                    child: _buildTopSection(
+                      context,
+                      isShort: isShort,
+                      isVeryShort: isVeryShort,
+                      isNarrow: isNarrow,
+                      isWide: isWide,
+                    ),
+                  ),
+
+                  // Divider line with floating Listen, Bookmark and Share buttons
+                  _buildFloatingActionDivider(),
+
+                  // Bottom 45%: "A Gentle Thought" reflection + "Swipe up for next" indicator
+                  Expanded(
+                    flex: 45,
+                    child: _buildBottomSection(
+                      context,
+                      isShort: isShort,
+                      isVeryShort: isVeryShort,
+                      isNarrow: isNarrow,
+                      isWide: isWide,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -102,6 +116,9 @@ class InshortsStageCard extends StatelessWidget {
     required bool isNarrow,
     bool isWide = false,
   }) {
+    final palette = widget.palette;
+    final item = widget.item;
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
@@ -112,7 +129,7 @@ class InshortsStageCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Single row with Flexible children and FittedBox to ensure 1 line of vertical height and 0 horizontal overflow
+          // Single row with Flexible children and FittedBox
           Row(
             children: [
               // Source badge ("BIBLE VERSE" vs. "INSPIRATIONAL QUOTE")
@@ -209,7 +226,6 @@ class InshortsStageCard extends StatelessWidget {
           SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
 
           // Main quote/verse text in editorial serif font
-          // Uses NeverScrollableScrollPhysics to pass vertical drag gestures straight to PageView
           Expanded(
             child: Center(
               child: SingleChildScrollView(
@@ -288,8 +304,11 @@ class InshortsStageCard extends StatelessWidget {
     );
   }
 
-  /// Divider line with floating Bookmark and Share buttons
+  /// Divider line with floating Listen, Bookmark, and Share buttons
   Widget _buildFloatingActionDivider() {
+    final palette = widget.palette;
+    final item = widget.item;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -300,7 +319,7 @@ class InshortsStageCard extends StatelessWidget {
           color: palette.cardBorder.withValues(alpha: 0.55),
         ),
 
-        // Floating Bookmark and Share buttons
+        // Floating action pill
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Container(
@@ -323,29 +342,82 @@ class InshortsStageCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Listen (TTS) button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      TtsService().speak(
+                        id: item.id,
+                        text: item.mainText,
+                        langCode: widget.langCode,
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 7.0, vertical: 4.0),
+                      child: ValueListenableBuilder<String?>(
+                        valueListenable: TtsService().currentlySpeakingId,
+                        builder: (context, speakingId, _) {
+                          final isSpeaking = speakingId == item.id;
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isSpeaking
+                                    ? Icons.volume_up_rounded
+                                    : Icons.volume_mute_outlined,
+                                size: 15.0,
+                                color: isSpeaking ? palette.accent : palette.secondaryText,
+                              ),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                isSpeaking ? 'Playing' : 'Listen',
+                                style: TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: isSpeaking ? FontWeight.w700 : FontWeight.w500,
+                                  color: isSpeaking ? palette.accent : palette.secondaryText,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Separator
+                Container(
+                  width: 1.0,
+                  height: 14.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                  color: palette.cardBorder.withValues(alpha: 0.6),
+                ),
+
                 // Bookmark button
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: onBookmarkToggle,
+                    onTap: widget.onBookmarkToggle,
                     borderRadius: BorderRadius.circular(16.0),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 7.0, vertical: 4.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isBookmarked ? Icons.bookmark : Icons.bookmark_border_rounded,
-                            size: 16.0,
-                            color: isBookmarked ? palette.accent : palette.secondaryText,
+                            widget.isBookmarked ? Icons.bookmark : Icons.bookmark_border_rounded,
+                            size: 15.0,
+                            color: widget.isBookmarked ? palette.accent : palette.secondaryText,
                           ),
                           const SizedBox(width: 4.0),
                           Text(
-                            isBookmarked ? 'Saved' : 'Save',
+                            widget.isBookmarked ? 'Saved' : 'Save',
                             style: TextStyle(
                               fontSize: 11.0,
-                              fontWeight: isBookmarked ? FontWeight.w600 : FontWeight.w500,
-                              color: isBookmarked ? palette.accent : palette.secondaryText,
+                              fontWeight: widget.isBookmarked ? FontWeight.w600 : FontWeight.w500,
+                              color: widget.isBookmarked ? palette.accent : palette.secondaryText,
                             ),
                           ),
                         ],
@@ -354,28 +426,37 @@ class InshortsStageCard extends StatelessWidget {
                   ),
                 ),
 
-                // Small vertical separator
+                // Separator
                 Container(
                   width: 1.0,
                   height: 14.0,
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
                   color: palette.cardBorder.withValues(alpha: 0.6),
                 ),
 
-                // Share button
+                // Share button (Image export + share)
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: onShare,
+                    onTap: () async {
+                      if (widget.onShare != null) {
+                        widget.onShare!();
+                      }
+                      await ShareableCard.shareItemAsImage(
+                        context: context,
+                        boundaryKey: _cardBoundaryKey,
+                        item: item,
+                      );
+                    },
                     borderRadius: BorderRadius.circular(16.0),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 7.0, vertical: 4.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.share_outlined,
-                            size: 15.0,
+                            size: 14.5,
                             color: palette.secondaryText,
                           ),
                           const SizedBox(width: 4.0),
@@ -408,6 +489,9 @@ class InshortsStageCard extends StatelessWidget {
     required bool isNarrow,
     bool isWide = false,
   }) {
+    final palette = widget.palette;
+    final item = widget.item;
+
     return Container(
       color: palette.cardSurface.withValues(alpha: 0.7),
       padding: EdgeInsets.fromLTRB(
@@ -482,7 +566,6 @@ class InshortsStageCard extends StatelessWidget {
           SizedBox(height: isVeryShort ? 2.0 : (isShort ? 4.0 : 8.0)),
 
           // Humble reflection body (2-3 sentences)
-          // Uses NeverScrollableScrollPhysics to allow vertical drag gestures to pass to PageView
           Expanded(
             child: SingleChildScrollView(
               physics: const NeverScrollableScrollPhysics(),
