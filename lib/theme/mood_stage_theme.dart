@@ -32,6 +32,9 @@ class StagePalette {
     required this.stageLabel,
   });
 
+  /// Whether this palette represents a dark theme (low-luminance background).
+  bool get isDarkPalette => bgTop.computeLuminance() < 0.3;
+
   /// Gloomy & Heavy palette (Twilight contemplation)
   static const StagePalette gloomy = StagePalette(
     bgTop: Color(0xFF181E2C),

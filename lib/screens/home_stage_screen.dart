@@ -2,15 +2,20 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/inshorts_feed_item.dart';
 import '../models/tagged_verse.dart';
 import '../services/bible_api_service.dart';
+import '../services/journal_storage.dart';
 import '../services/mood_matching_engine.dart';
 import '../services/mystery_box_engine.dart';
 import '../services/quote_api_service.dart';
 import '../theme/mood_stage_theme.dart';
 import '../widgets/inshorts_stage_card.dart';
 import '../widgets/mystery_box_modal.dart';
+import 'today_screen.dart';
+import 'journal_screen.dart';
+import 'feelings_screen.dart';
 
 /// Content filter options for the Inshorts vertical swipe feed.
 enum ContentFilter {
@@ -49,13 +54,17 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   String _selectedLanguage = 'eng';
   ContentFilter _currentFilter = ContentFilter.all;
   final Set<String> _bookmarkedIds = <String>{};
-  int _currentNavIndex = 0;
+  int _currentNavIndex = 1; // Default to Reflect (feed) tab
+
+  /// Dark/light mode: 'auto', 'dark', 'light'
+  String _themeMode = 'auto';
 
   late final BibleApiService _bibleApiService;
   late final MoodMatchingEngine _moodMatchingEngine;
   late final QuoteApiService _quoteApiService;
   late final MysteryBoxEngine _mysteryBoxEngine;
   late final PageController _pageController;
+  late final JournalStorage _journalStorage;
 
   List<TaggedVerse> _allVerses = [];
   List<InspirationalQuote> _allQuotes = [];
@@ -91,6 +100,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           moodMatchingEngine: _moodMatchingEngine,
           quoteApiService: _quoteApiService,
         );
+    _journalStorage = JournalStorage();
 
     // Immediately seed with curated in-memory verses and quotes so the feed is instantly available
     _allVerses = MoodMatchingEngine.defaultSeedVerses;
@@ -108,6 +118,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
     // Asynchronously fetch fresh quotes from cache/API in background
     _initializeFeed();
+    _loadThemePreference();
   }
 
   @override
@@ -117,6 +128,35 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     _focusNode.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  /// Loads the saved dark/light mode preference.
+  Future<void> _loadThemePreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final mode = prefs.getString('theme_mode') ?? 'auto';
+      if (mounted && (mode == 'auto' || mode == 'dark' || mode == 'light')) {
+        setState(() => _themeMode = mode);
+      }
+    } catch (_) {
+      // Graceful fallback to auto
+    }
+  }
+
+  /// Cycles through theme modes: auto → dark → light → auto.
+  Future<void> _cycleThemeMode() async {
+    final nextMode = switch (_themeMode) {
+      'auto' => 'dark',
+      'dark' => 'light',
+      _ => 'auto',
+    };
+    setState(() => _themeMode = nextMode);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('theme_mode', nextMode);
+    } catch (_) {
+      // Ignore
+    }
   }
 
   /// Initializes Bible verses and inspirational quotes, interleaves them, and prepares the feed.
@@ -202,6 +242,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     setState(() {
       activeStage = stage;
     });
+
+    // Record mood for today
+    _journalStorage.recordMoodForToday(stage);
 
     final targetIndex = _displayedItems.indexWhere((item) => item.stage == stage);
     if (targetIndex != -1 && _pageController.hasClients) {
@@ -406,6 +449,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                 focusNode: _focusNode,
                 autofocus: true,
                 onKeyEvent: (node, event) {
+                  // Only handle keyboard for Reflect tab (feed)
+                  if (_currentNavIndex != 1) return KeyEventResult.ignored;
                   if (event is KeyDownEvent || event is KeyRepeatEvent) {
                     if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
                         event.logicalKey == LogicalKeyboardKey.pageDown ||
@@ -456,87 +501,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                     ),
                     SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
 
-                    // Vertical Inshorts-style PageView middle feed
+                    // Tab content area
                     Expanded(
-                      child: _isLoading
-                          ? Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(palette.accent),
-                              ),
-                            )
-                          : _displayedItems.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'No moments found in this section.',
-                                    style: TextStyle(
-                                      fontSize: 14.0,
-                                      color: palette.secondaryText,
-                                    ),
-                                  ),
-                                )
-                              : Stack(
-                                  children: [
-                                    Positioned.fill(
-                                      child: ScrollConfiguration(
-                                        behavior: ScrollConfiguration.of(context).copyWith(
-                                          dragDevices: {
-                                            PointerDeviceKind.touch,
-                                            PointerDeviceKind.mouse,
-                                            PointerDeviceKind.trackpad,
-                                            PointerDeviceKind.stylus,
-                                          },
-                                        ),
-                                        child: PageView.builder(
-                                          scrollDirection: Axis.vertical,
-                                          pageSnapping: true,
-                                          physics: const BouncingScrollPhysics(),
-                                          controller: _pageController,
-                                          onPageChanged: _onPageChanged,
-                                          itemCount: _displayedItems.length,
-                                          itemBuilder: (context, index) {
-                                            final item = _displayedItems[index];
-                                            final isBookmarked = _bookmarkedIds.contains(item.id);
-
-                                            return InshortsStageCard(
-                                              key: ValueKey('${item.id}_$_selectedLanguage'),
-                                              item: item,
-                                              palette: item.stage.palette,
-                                              isBookmarked: isBookmarked,
-                                              langCode: _selectedLanguage,
-                                              onBookmarkToggle: () {
-                                                final wasSaved = _bookmarkedIds.contains(item.id);
-                                                setState(() {
-                                                  if (wasSaved) {
-                                                    _bookmarkedIds.remove(item.id);
-                                                  } else {
-                                                    _bookmarkedIds.add(item.id);
-                                                  }
-                                                });
-                                                final message = !wasSaved
-                                                    ? 'Saved to your quiet sanctuary'
-                                                    : 'Removed from saved moments';
-                                                _showGentleNotice(message, item.stage.palette);
-                                              },
-                                              onShare: () {
-                                                _showGentleNotice(
-                                                  'Copied to share gentle comfort',
-                                                  item.stage.palette,
-                                                );
-                                              },
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned.fill(
-                                      child: Listener(
-                                        behavior: HitTestBehavior.translucent,
-                                        onPointerSignal: _onPointerSignal,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                      child: _buildTabContent(palette),
                     ),
                   ],
                 ),
@@ -550,8 +517,140 @@ class HomeStageScreenState extends State<HomeStageScreen> {
         isShort: isShortScreen,
         isVeryShort: isVeryShortScreen,
       ),
-      floatingActionButton: _buildForYouFloatingButton(palette),
+      floatingActionButton: _currentNavIndex == 1
+          ? _buildForYouFloatingButton(palette)
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  /// Builds the content for the currently selected tab.
+  Widget _buildTabContent(StagePalette palette) {
+    switch (_currentNavIndex) {
+      case 0:
+        return TodayScreen(
+          palette: palette,
+          verses: _allVerses,
+          quotes: _allQuotes,
+          langCode: _selectedLanguage,
+          bookmarkedIds: _bookmarkedIds,
+          onBookmarkToggle: (id) {
+            setState(() {
+              if (_bookmarkedIds.contains(id)) {
+                _bookmarkedIds.remove(id);
+              } else {
+                _bookmarkedIds.add(id);
+              }
+            });
+          },
+        );
+      case 2:
+        return JournalScreen(
+          palette: palette,
+          allFeedItems: _allFeedItems,
+          bookmarkedIds: _bookmarkedIds,
+          journalStorage: _journalStorage,
+          onBookmarkToggle: (id) {
+            setState(() {
+              _bookmarkedIds.remove(id);
+            });
+          },
+        );
+      case 3:
+        return FeelingsScreen(
+          palette: palette,
+          journalStorage: _journalStorage,
+        );
+      default:
+        // Reflect tab (index 1) — the vertical swipe feed
+        return _buildFeedContent(palette);
+    }
+  }
+
+  /// The vertical Inshorts-style PageView feed (Reflect tab).
+  Widget _buildFeedContent(StagePalette palette) {
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2.5,
+          valueColor: AlwaysStoppedAnimation<Color>(palette.accent),
+        ),
+      );
+    }
+
+    if (_displayedItems.isEmpty) {
+      return Center(
+        child: Text(
+          'No moments found in this section.',
+          style: TextStyle(
+            fontSize: 14.0,
+            color: palette.secondaryText,
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+                PointerDeviceKind.trackpad,
+                PointerDeviceKind.stylus,
+              },
+            ),
+            child: PageView.builder(
+              scrollDirection: Axis.vertical,
+              pageSnapping: true,
+              physics: const BouncingScrollPhysics(),
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              itemCount: _displayedItems.length,
+              itemBuilder: (context, index) {
+                final item = _displayedItems[index];
+                final isBookmarked = _bookmarkedIds.contains(item.id);
+
+                return InshortsStageCard(
+                  key: ValueKey('${item.id}_$_selectedLanguage'),
+                  item: item,
+                  palette: item.stage.palette,
+                  isBookmarked: isBookmarked,
+                  langCode: _selectedLanguage,
+                  onBookmarkToggle: () {
+                    final wasSaved = _bookmarkedIds.contains(item.id);
+                    setState(() {
+                      if (wasSaved) {
+                        _bookmarkedIds.remove(item.id);
+                      } else {
+                        _bookmarkedIds.add(item.id);
+                      }
+                    });
+                    final message = !wasSaved
+                        ? 'Saved to your quiet sanctuary'
+                        : 'Removed from saved moments';
+                    _showGentleNotice(message, item.stage.palette);
+                  },
+                  onShare: () {
+                    _showGentleNotice(
+                      'Copied to share gentle comfort',
+                      item.stage.palette,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerSignal: _onPointerSignal,
+          ),
+        ),
+      ],
     );
   }
 
@@ -628,7 +727,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     );
   }
 
-  /// Top header bar featuring the "Grace & Growth" title, compact filter toggle, and language selector pill.
+  /// Top header bar featuring the "Grace & Growth" title, theme toggle, compact filter toggle, and language selector pill.
   Widget _buildHeaderBar(
     StagePalette palette, {
     bool isShort = false,
@@ -696,6 +795,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                       ],
                     ),
                   ),
+                  _buildThemeToggle(palette),
                 ],
               ),
               SizedBox(height: isVeryShort ? 4.0 : 6.0),
@@ -720,7 +820,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Row 1: App Title & Language Selector
+            // Row 1: App Title & Theme Toggle & Language Selector
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -779,7 +879,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                   ),
                 ),
 
-                const SizedBox(width: 8.0),
+                const SizedBox(width: 4.0),
+                _buildThemeToggle(palette),
+                const SizedBox(width: 4.0),
 
                 Flexible(
                   child: FittedBox(
@@ -800,6 +902,39 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           ],
         );
       },
+    );
+  }
+
+  /// Dark/light mode toggle button.
+  Widget _buildThemeToggle(StagePalette palette) {
+    final icon = switch (_themeMode) {
+      'dark' => Icons.dark_mode_rounded,
+      'light' => Icons.light_mode_rounded,
+      _ => Icons.brightness_auto_rounded,
+    };
+    final tooltip = switch (_themeMode) {
+      'dark' => 'Dark mode',
+      'light' => 'Light mode',
+      _ => 'Auto mode',
+    };
+
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _cycleThemeMode,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              icon,
+              size: 18,
+              color: palette.secondaryText,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1132,9 +1267,6 @@ class HomeStageScreenState extends State<HomeStageScreen> {
             setState(() {
               _currentNavIndex = index;
             });
-            if (index == 1) {
-              loadRandomDailyVerse();
-            }
           },
           backgroundColor: Colors.transparent,
           elevation: 0,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_stage_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +18,7 @@ class GraceAndGrowthApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'serif',
       ),
-      home: const HomeStageScreen(),
+      home: const SplashScreen(),
     );
   }
 }
