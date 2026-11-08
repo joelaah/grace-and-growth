@@ -661,7 +661,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                     },
                     onShare: () {
                       _showGentleNotice(
-                        'Preparing gentle card to share',
+                        'Copied to share gentle comfort',
                         item.stage.palette,
                       );
                     },
