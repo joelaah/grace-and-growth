@@ -18,8 +18,8 @@ import 'package:flutter/material.dart';
 ///           alignment: Alignment.center,
 ///           transform: Matrix4.identity()
 ///             ..setEntry(3, 2, 0.001)  // perspective
-///             ..scale(metrics.scale)
-///             ..translate(0.0, metrics.translationY),
+///             ..multiply(Matrix4.diagonal3Values(metrics.scale, metrics.scale, 1.0))
+///             ..multiply(Matrix4.translationValues(0.0, metrics.translationY, 0.0)),
 ///           child: Opacity(
 ///             opacity: metrics.opacity,
 ///             child: child,

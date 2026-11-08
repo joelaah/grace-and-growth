@@ -154,7 +154,18 @@ class _NotificationTimePickerModalState
                     ),
                     Switch(
                       value: _isEnabled,
-                      activeColor: palette.accent,
+                      thumbColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return palette.accent;
+                        }
+                        return null;
+                      }),
+                      trackColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return palette.accent.withValues(alpha: 0.45);
+                        }
+                        return null;
+                      }),
                       onChanged: (val) {
                         setState(() => _isEnabled = val);
                       },
