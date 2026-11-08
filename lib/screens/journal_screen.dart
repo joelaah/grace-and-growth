@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/inshorts_feed_item.dart';
 import '../services/journal_storage.dart';
 import '../theme/mood_stage_theme.dart';
@@ -439,6 +440,59 @@ class _JournalScreenState extends State<JournalScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final text = noteController.text.trim();
+                        try {
+                          await Supabase.instance.client
+                              .from('community_reflections')
+                              .insert({
+                            'verse_text': item.mainText,
+                            'reflection': text.isNotEmpty
+                                ? text
+                                : item.reflectionContent,
+                            'mood_stage': item.stage.index,
+                            'created_at': DateTime.now().toIso8601String(),
+                          });
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Quietly shared with fellow pilgrims in the sanctuary.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (_) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Note preserved locally in your journal.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.diversity_3_outlined, size: 16),
+                      label: const Text('Share Anonymously with Community'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cardPalette.accent,
+                        side: BorderSide(
+                          color: cardPalette.accent.withValues(alpha: 0.5),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

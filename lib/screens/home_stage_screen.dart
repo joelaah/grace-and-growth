@@ -19,6 +19,8 @@ import '../widgets/notification_time_picker.dart';
 import 'today_screen.dart';
 import 'journal_screen.dart';
 import 'feelings_screen.dart';
+import 'auth_screen.dart';
+import 'community_screen.dart';
 
 /// Content filter options for the Inshorts vertical swipe feed.
 enum ContentFilter {
@@ -820,9 +822,10 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                       ],
                     ),
                   ),
-                  _buildThemeToggle(palette),
-                  const SizedBox(width: 2.0),
+                  _buildCommunityButton(palette),
+                  _buildAccountButton(palette),
                   _buildNotificationButton(palette),
+                  _buildThemeToggle(palette),
                 ],
               ),
               SizedBox(height: isVeryShort ? 4.0 : 6.0),
@@ -907,9 +910,13 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                 ),
 
                 const SizedBox(width: 4.0),
-                _buildThemeToggle(palette),
+                _buildCommunityButton(palette),
+                const SizedBox(width: 2.0),
+                _buildAccountButton(palette),
                 const SizedBox(width: 2.0),
                 _buildNotificationButton(palette),
+                const SizedBox(width: 2.0),
+                _buildThemeToggle(palette),
                 const SizedBox(width: 4.0),
 
                 Flexible(
@@ -980,6 +987,50 @@ class HomeStageScreenState extends State<HomeStageScreen> {
             padding: const EdgeInsets.all(6),
             child: Icon(
               Icons.notifications_none_rounded,
+              size: 18,
+              color: palette.secondaryText,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Cloud sync and account modal trigger.
+  Widget _buildAccountButton(StagePalette palette) {
+    return Tooltip(
+      message: 'Cloud Sync & Account',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => AuthModal.show(context, palette),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              Icons.cloud_outlined,
+              size: 18,
+              color: palette.secondaryText,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Quiet Solidarity (Community Reflections) modal trigger.
+  Widget _buildCommunityButton(StagePalette palette) {
+    return Tooltip(
+      message: 'Quiet Solidarity (Community)',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => CommunityScreen.show(context, palette),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              Icons.diversity_3_outlined,
               size: 18,
               color: palette.secondaryText,
             ),
