@@ -771,7 +771,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-        final narrowMode = isNarrow || constraints.maxWidth < 340 || textScale > 1.25;
+        final narrowMode = isNarrow || constraints.maxWidth < 430 || textScale > 1.15;
 
         if (narrowMode) {
           return Column(
@@ -984,10 +984,12 @@ class HomeStageScreenState extends State<HomeStageScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (modalContext) {
+        final screenHeight = MediaQuery.of(modalContext).size.height;
+        final isShort = screenHeight < 680;
+        final modalHeight = screenHeight * (isShort ? 0.92 : 0.85);
+
         return Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(modalContext).size.height * 0.85,
-          ),
+          height: modalHeight,
           decoration: BoxDecoration(
             color: palette.cardSurface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),

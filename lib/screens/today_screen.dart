@@ -93,45 +93,57 @@ class _TodayScreenState extends State<TodayScreen> {
       langCode: widget.langCode,
     );
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section: Verse of the Day with Reminder quick-action
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 340;
+        final horizontalPadding = isNarrow ? 12.0 : 20.0;
+
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader(
-                palette,
-                icon: Icons.auto_stories_outlined,
-                title: 'Verse of the Day',
-              ),
-              InkWell(
-                onTap: () => NotificationTimePickerModal.show(context, palette),
-                borderRadius: BorderRadius.circular(16.0),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        'Reminder',
-                        style: TextStyle(
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w500,
-                          color: palette.secondaryText,
-                        ),
+              // Section: Verse of the Day with Reminder quick-action
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: _buildSectionHeader(
+                        palette,
+                        icon: Icons.auto_stories_outlined,
+                        title: 'Verse of the Day',
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8.0),
+                  InkWell(
+                    onTap: () => NotificationTimePickerModal.show(context, palette),
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
+                          const SizedBox(width: 4.0),
+                          Text(
+                            'Reminder',
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w500,
+                              color: palette.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
           const SizedBox(height: 10),
           if (todaysVerse != null)
             _buildContentCard(palette, todaysVerse)
@@ -172,15 +184,17 @@ class _TodayScreenState extends State<TodayScreen> {
           const SizedBox(height: 14),
 
           // Duration chips
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildDurationChip(palette, 60, '1 min'),
-              const SizedBox(width: 8),
-              _buildDurationChip(palette, 120, '2 min'),
-              const SizedBox(width: 8),
-              _buildDurationChip(palette, 180, '3 min'),
-            ],
+          Center(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildDurationChip(palette, 60, '1 min'),
+                _buildDurationChip(palette, 120, '2 min'),
+                _buildDurationChip(palette, 180, '3 min'),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -278,6 +292,8 @@ class _TodayScreenState extends State<TodayScreen> {
         ],
       ),
     );
+      },
+    );
   }
 
   Widget _buildSectionHeader(
@@ -285,20 +301,27 @@ class _TodayScreenState extends State<TodayScreen> {
     required IconData icon,
     required String title,
   }) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: palette.accent),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'serif',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: palette.primaryText,
+    return FittedBox(
+      alignment: Alignment.centerLeft,
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: palette.accent),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'serif',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: palette.primaryText,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

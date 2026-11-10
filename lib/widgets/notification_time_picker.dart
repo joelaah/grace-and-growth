@@ -111,47 +111,56 @@ class _NotificationTimePickerModalState
               height: 180,
               child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
             )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top handle
-                Center(
-                  child: Container(
-                    width: 38.0,
-                    height: 4.0,
-                    decoration: BoxDecoration(
-                      color: palette.secondaryText.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(2.0),
+          : SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top handle
+                  Center(
+                    child: Container(
+                      width: 38.0,
+                      height: 4.0,
+                      decoration: BoxDecoration(
+                        color: palette.secondaryText.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(2.0),
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 18.0),
+                  const SizedBox(height: 18.0),
 
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.notifications_active_outlined,
-                          size: 20.0,
-                          color: palette.accent,
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.notifications_active_outlined,
+                              size: 20.0,
+                              color: palette.accent,
+                            ),
+                            const SizedBox(width: 8.0),
+                            Flexible(
+                              child: Text(
+                                'Daily Sanctuary Reminder',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'serif',
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w600,
+                                  color: palette.primaryText,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8.0),
-                        Text(
-                          'Daily Sanctuary Reminder',
-                          style: TextStyle(
-                            fontFamily: 'serif',
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w600,
-                            color: palette.primaryText,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8.0),
                     Switch(
                       value: _isEnabled,
                       thumbColor: WidgetStateProperty.resolveWith((states) {
@@ -280,6 +289,7 @@ class _NotificationTimePickerModalState
                 ),
               ],
             ),
+          ),
     );
   }
 }

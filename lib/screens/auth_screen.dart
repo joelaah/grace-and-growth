@@ -148,10 +148,12 @@ class _AuthModalState extends State<AuthModal> {
         24.0,
         MediaQuery.of(context).viewInsets.bottom + 28.0,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Handle bar
           Center(
             child: Container(
@@ -401,6 +403,7 @@ class _AuthModalState extends State<AuthModal> {
           ],
         ],
       ),
-    );
+    ),
+  );
   }
 }

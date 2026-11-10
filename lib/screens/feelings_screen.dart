@@ -161,6 +161,8 @@ class _FeelingsScreenState extends State<FeelingsScreen> {
   Widget _buildSectionHeader(StagePalette palette, String title) {
     return Text(
       title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontFamily: 'serif',
         fontSize: 18,
@@ -245,7 +247,14 @@ class _FeelingsScreenState extends State<FeelingsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildSectionHeader(palette, '$monthName $_currentYear'),
+        Expanded(
+          child: FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: _buildSectionHeader(palette, '$monthName $_currentYear'),
+          ),
+        ),
+        const SizedBox(width: 8),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
