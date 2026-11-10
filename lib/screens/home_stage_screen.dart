@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/inshorts_feed_item.dart';
 import '../models/tagged_verse.dart';
@@ -61,8 +62,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   final Set<String> _bookmarkedIds = <String>{};
   int _currentNavIndex = 1; // Default to Reflect (feed) tab
 
-  /// Dark/light mode: 'auto', 'dark', 'light'
-  String _themeMode = 'auto';
+  /// Single unified Spiritual Bible theme mode: 'dark' (Sanctuary Twilight) or 'light' (Sacred Scripture)
+  late String _themeMode;
 
   late final BibleApiService _bibleApiService;
   late final MoodMatchingEngine _moodMatchingEngine;
@@ -96,6 +97,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   void initState() {
     super.initState();
     activeStage = widget.initialStage;
+    _themeMode = activeStage.palette.isDarkPalette ? 'dark' : 'light';
     _bibleApiService = widget.bibleApiService ?? BibleApiService();
     _moodMatchingEngine = widget.moodMatchingEngine ??
         MoodMatchingEngine(bibleApiService: _bibleApiService);
@@ -136,27 +138,39 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     super.dispose();
   }
 
-  /// Loads the saved dark/light mode preference.
+  /// Loads the saved dark/light mode preference with automatic migration of legacy 'auto' values.
   Future<void> _loadThemePreference() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final mode = prefs.getString('theme_mode') ?? 'auto';
-      if (mounted && (mode == 'auto' || mode == 'dark' || mode == 'light')) {
-        setState(() => _themeMode = mode);
+      final mode = prefs.getString('theme_mode');
+      if (mounted) {
+        if (mode == 'dark' || mode == 'light') {
+          setState(() {
+            _themeMode = mode!;
+            activeStage = mode == 'light' ? MoodStage.bright : MoodStage.gloomy;
+          });
+        } else if (mode == 'auto') {
+          final isDark = WidgetsBinding.instance.platformDispatcher.platformBrightness != Brightness.light;
+          final resolvedMode = isDark ? 'dark' : 'light';
+          setState(() {
+            _themeMode = resolvedMode;
+            activeStage = resolvedMode == 'light' ? MoodStage.bright : MoodStage.gloomy;
+          });
+          await prefs.setString('theme_mode', resolvedMode);
+        }
       }
     } catch (_) {
-      // Graceful fallback to auto
+      // Graceful fallback to initial
     }
   }
 
-  /// Cycles through theme modes: auto → dark → light → auto.
-  Future<void> _cycleThemeMode() async {
-    final nextMode = switch (_themeMode) {
-      'auto' => 'dark',
-      'dark' => 'light',
-      _ => 'auto',
-    };
-    setState(() => _themeMode = nextMode);
+  /// Toggles between single spiritual Light mode and Dark mode.
+  Future<void> _toggleThemeMode() async {
+    final nextMode = _themeMode == 'dark' ? 'light' : 'dark';
+    setState(() {
+      _themeMode = nextMode;
+      activeStage = nextMode == 'light' ? MoodStage.bright : MoodStage.gloomy;
+    });
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('theme_mode', nextMode);
@@ -164,6 +178,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
       // Ignore
     }
   }
+
+  /// Public toggle helper for switching between Light and Dark mode.
+  Future<void> toggleThemeMode() => _toggleThemeMode();
 
   /// Initializes Bible verses and inspirational quotes, interleaves them, and prepares the feed.
   Future<void> _initializeFeed() async {
@@ -237,9 +254,6 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
     if (resetPage && _pageController.hasClients && _displayedItems.isNotEmpty) {
       _pageController.jumpToPage(0);
-      setState(() {
-        activeStage = _displayedItems[0].stage;
-      });
     }
   }
 
@@ -247,6 +261,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   Future<void> _jumpToStage(MoodStage stage) async {
     setState(() {
       activeStage = stage;
+      _themeMode = stage.palette.isDarkPalette ? 'dark' : 'light';
     });
 
     // Record mood for today
@@ -274,25 +289,12 @@ class HomeStageScreenState extends State<HomeStageScreen> {
         curve: Curves.easeInOutCubic,
       );
     }
-
-    if (mounted) {
-      setState(() {
-        activeStage = _displayedItems[randomIndex].stage;
-      });
-    }
   }
 
   /// Called on every vertical swipe in the [PageView.builder].
   void _onPageChanged(int index) {
     TtsService().stop();
-    if (index >= 0 && index < _displayedItems.length) {
-      final currentCard = _displayedItems[index];
-      if (activeStage != currentCard.stage) {
-        setState(() {
-          activeStage = currentCard.stage;
-        });
-      }
-    }
+    // Maintain single unified theme mode during swipe to avoid flashing and eye strain
   }
 
   /// Intercepts mouse wheel / trackpad scroll events and resolves them before
@@ -644,7 +646,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                   child: InshortsStageCard(
                     key: ValueKey('${item.id}_$_selectedLanguage'),
                     item: item,
-                    palette: item.stage.palette,
+                    palette: palette,
                     isBookmarked: isBookmarked,
                     langCode: _selectedLanguage,
                     onBookmarkToggle: () {
@@ -659,14 +661,17 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                       final message = !wasSaved
                           ? 'Saved to your quiet sanctuary'
                           : 'Removed from saved moments';
-                      _showGentleNotice(message, item.stage.palette);
+                      _showGentleNotice(message, palette);
                     },
                     onShare: () {
                       _showGentleNotice(
                         'Copied to share gentle comfort',
-                        item.stage.palette,
+                        palette,
                       );
                     },
+                    onResearch: item.isVerse
+                        ? () => _showBibleResearchModal(item, palette)
+                        : null,
                   ),
                 );
               },
@@ -812,7 +817,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                           ),
                         ),
                         Text(
-                          'Daily Sanctuary',
+                          'Daily Sanctuary • Spreading the Gospel',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -895,7 +900,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                               ),
                             ),
                             Text(
-                              'Daily Sanctuary',
+                              'Daily Sanctuary • Spreading the Gospel',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -943,25 +948,20 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     );
   }
 
-  /// Dark/light mode toggle button.
+  /// Single Light/Dark mode toggle button with clear spiritual mode indications.
   Widget _buildThemeToggle(StagePalette palette) {
-    final icon = switch (_themeMode) {
-      'dark' => Icons.dark_mode_rounded,
-      'light' => Icons.light_mode_rounded,
-      _ => Icons.brightness_auto_rounded,
-    };
-    final tooltip = switch (_themeMode) {
-      'dark' => 'Dark mode',
-      'light' => 'Light mode',
-      _ => 'Auto mode',
-    };
+    final isDark = _themeMode == 'dark';
+    final icon = isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded;
+    final tooltip = isDark
+        ? 'Switch to Light mode (Sacred Scripture)'
+        : 'Switch to Dark mode (Sanctuary Twilight)';
 
     return Tooltip(
       message: tooltip,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _cycleThemeMode,
+          onTap: _toggleThemeMode,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(6),
@@ -972,6 +972,312 @@ class HomeStageScreenState extends State<HomeStageScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Displays the interactive Bible Research & Gospel Spreading modal bottom sheet.
+  void _showBibleResearchModal(InshortsFeedItem item, StagePalette palette) {
+    final verse = item.taggedVerse;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(modalContext).size.height * 0.85,
+          ),
+          decoration: BoxDecoration(
+            color: palette.cardSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
+            border: Border.all(
+              color: palette.cardBorder.withValues(alpha: 0.8),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 24.0,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10.0, bottom: 8.0),
+                    width: 38.0,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: palette.secondaryText.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
+
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: palette.accent.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(12.0),
+                          border: Border.all(
+                            color: palette.accent.withValues(alpha: 0.35),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.auto_stories_rounded,
+                          size: 20.0,
+                          color: palette.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 12.0),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bible Research & Study',
+                              style: TextStyle(
+                                fontFamily: 'serif',
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.w600,
+                                color: palette.primaryText,
+                              ),
+                            ),
+                            Text(
+                              'Spreading the Gospel through Living Word',
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                color: palette.secondaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close_rounded, size: 20.0, color: palette.secondaryText),
+                        onPressed: () => Navigator.of(modalContext).pop(),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(height: 1.0),
+
+                // Scrollable content
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Scripture Reference Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                          decoration: BoxDecoration(
+                            color: palette.accent.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Text(
+                            item.attribution,
+                            style: TextStyle(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: palette.accent,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12.0),
+
+                        // Main Scripture Verse
+                        Container(
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            color: palette.bgTop.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(16.0),
+                            border: Border.all(
+                              color: palette.cardBorder.withValues(alpha: 0.5),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Text(
+                            '“${item.mainText}”',
+                            style: TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: 16.5,
+                              height: 1.5,
+                              color: palette.primaryText,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20.0),
+
+                        // Research Details Section
+                        Text(
+                          'Scripture Context & Details',
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w600,
+                            color: palette.primaryText,
+                          ),
+                        ),
+                        const SizedBox(height: 8.0),
+
+                        _buildResearchDetailRow(
+                          palette,
+                          'Translation',
+                          verse != null
+                              ? 'Berean Standard Bible (BSB) • Public Domain'
+                              : 'Curated Contemplative Devotional',
+                          Icons.translate_rounded,
+                        ),
+                        if (verse != null) ...[
+                          _buildResearchDetailRow(
+                            palette,
+                            'Book & Location',
+                            'Book: ${verse.book} • Chapter ${verse.chapter}, Verse ${verse.verse}',
+                            Icons.bookmark_added_outlined,
+                          ),
+                          _buildResearchDetailRow(
+                            palette,
+                            'Theme & Tags',
+                            verse.moodTags.join(' • '),
+                            Icons.local_offer_outlined,
+                          ),
+                        ],
+                        _buildResearchDetailRow(
+                          palette,
+                          'Spiritual Aim',
+                          'Spreading the Good News of God’s grace, peace, and eternal love.',
+                          Icons.favorite_outline_rounded,
+                        ),
+
+                        const SizedBox(height: 18.0),
+
+                        // Devotional Reflection
+                        Text(
+                          'Quiet Devotional Meditation',
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w600,
+                            color: palette.primaryText,
+                          ),
+                        ),
+                        const SizedBox(height: 8.0),
+                        Text(
+                          item.reflectionContent,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            height: 1.5,
+                            fontStyle: FontStyle.italic,
+                            color: palette.secondaryText,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24.0),
+
+                        // Action: Spread the Gospel
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              final gospelText =
+                                  '🕊️ Good News for Your Heart:\n\n“${item.mainText}”\n— ${item.attribution}\n\nShared with love to spread the Gospel • Grace & Growth Daily Sanctuary';
+                              Clipboard.setData(ClipboardData(text: gospelText));
+                              try {
+                                Share.share(
+                                  gospelText,
+                                  subject: 'Spreading the Gospel: ${item.attribution}',
+                                );
+                              } catch (_) {
+                                // Ignore headless test / unsupported platform errors
+                              }
+                              _showGentleNotice(
+                                'Copied to share gentle comfort',
+                                palette,
+                              );
+                              Navigator.of(modalContext).pop();
+                            },
+                            icon: const Icon(Icons.send_rounded, size: 16.0),
+                            label: const Text(
+                              'Spread This Gospel Verse',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: palette.accent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              elevation: 2.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResearchDetailRow(
+    StagePalette palette,
+    String label,
+    String value,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16.0, color: palette.accent),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(fontSize: 12.5, color: palette.secondaryText),
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: palette.primaryText,
+                    ),
+                  ),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

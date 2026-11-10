@@ -185,7 +185,7 @@ class ShareableCard extends StatelessWidget {
               ),
               const SizedBox(width: 4.0),
               Text(
-                '• Daily Sanctuary',
+                '• Spreading the Gospel',
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w400,
@@ -211,7 +211,8 @@ class ShareableCard extends StatelessWidget {
         pixelRatio: 3.0,
       );
 
-      final shareText = '“${item.mainText}”\n— ${item.attribution}\n\nShared from Grace & Growth • Daily Sanctuary';
+      final shareText =
+          '“${item.mainText}”\n— ${item.attribution}\n\n🕊️ Spreading the Gospel • Grace & Growth Sanctuary';
 
       if (pngBytes != null && pngBytes.isNotEmpty) {
         if (!kIsWeb) {

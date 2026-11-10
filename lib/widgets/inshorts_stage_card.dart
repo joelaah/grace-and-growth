@@ -15,6 +15,7 @@ class InshortsStageCard extends StatefulWidget {
   final bool isBookmarked;
   final VoidCallback? onBookmarkToggle;
   final VoidCallback? onShare;
+  final VoidCallback? onResearch;
   final String langCode;
 
   const InshortsStageCard({
@@ -24,6 +25,7 @@ class InshortsStageCard extends StatefulWidget {
     this.isBookmarked = false,
     this.onBookmarkToggle,
     this.onShare,
+    this.onResearch,
     this.langCode = 'eng',
   });
 
@@ -473,6 +475,47 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                     ),
                   ),
                 ),
+
+                if (widget.onResearch != null) ...[
+                  // Separator
+                  Container(
+                    width: 1.0,
+                    height: 14.0,
+                    margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                    color: palette.cardBorder.withValues(alpha: 0.6),
+                  ),
+
+                  // Research / Bible Study button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: widget.onResearch,
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 7.0, vertical: 4.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.auto_stories_outlined,
+                              size: 14.5,
+                              color: palette.accent,
+                            ),
+                            const SizedBox(width: 4.0),
+                            Text(
+                              'Research',
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w600,
+                                color: palette.accent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

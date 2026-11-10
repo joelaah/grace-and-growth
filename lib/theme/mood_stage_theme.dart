@@ -83,6 +83,30 @@ class StagePalette {
     stageLabel: 'Walking Humbly',
   );
 
+  /// Canonical Spiritual Bible Dark Palette (Sanctuary Twilight & Holy Reverence)
+  static const StagePalette bibleDark = StagePalette(
+    bgTop: Color(0xFF181E2C),
+    bgBottom: Color(0xFF232B3E),
+    cardSurface: Color(0xFF2A344B),
+    cardBorder: Color(0xFF3D4B6A),
+    primaryText: Color(0xFFF4F1EA),
+    secondaryText: Color(0xFFB0BCCD),
+    accent: Color(0xFFE6B87D),
+    stageLabel: 'Sanctuary Twilight',
+  );
+
+  /// Canonical Spiritual Bible Light Palette (Sacred Scripture & Ancient Parchment Linen)
+  static const StagePalette bibleLight = StagePalette(
+    bgTop: Color(0xFFFFFDF9),
+    bgBottom: Color(0xFFF7EFE2),
+    cardSurface: Color(0xFFFFFFFF),
+    cardBorder: Color(0xFFEFE3CE),
+    primaryText: Color(0xFF2C221E),
+    secondaryText: Color(0xFF7A695C),
+    accent: Color(0xFFD97736),
+    stageLabel: 'Sacred Scripture',
+  );
+
   /// Complete lookup map of palettes keyed by [MoodStage].
   static const Map<MoodStage, StagePalette> palettes = {
     MoodStage.gloomy: gloomy,
