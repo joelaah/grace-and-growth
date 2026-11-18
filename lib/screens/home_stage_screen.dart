@@ -697,6 +697,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           MysteryBoxModal.show(
             context,
             activeMood: activeStage,
+            palette: palette,
             langCode: _selectedLanguage,
             mysteryBoxEngine: _mysteryBoxEngine,
             isItemBookmarked: (item) => _bookmarkedIds.contains(item.id),
@@ -712,12 +713,12 @@ class HomeStageScreenState extends State<HomeStageScreen> {
               final message = !wasSaved
                   ? 'Saved to your quiet sanctuary'
                   : 'Removed from saved moments';
-              _showGentleNotice(message, item.stage.palette);
+              _showGentleNotice(message, palette);
             },
             onShare: (item) {
               _showGentleNotice(
                 'Copied to share gentle comfort',
-                item.stage.palette,
+                palette,
               );
             },
           );
@@ -1598,7 +1599,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? stagePalette.cardSurface
+                            ? palette.cardSurface
                             : palette.cardSurface.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(24.0),
                         border: Border.all(
@@ -1638,7 +1639,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                               fontSize: isVeryShort ? 10.0 : (isShort ? 11.0 : 12.0),
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                               color: isSelected
-                                  ? stagePalette.primaryText
+                                  ? palette.primaryText
                                   : palette.secondaryText,
                             ),
                           ),

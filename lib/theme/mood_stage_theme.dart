@@ -35,75 +35,75 @@ class StagePalette {
   /// Whether this palette represents a dark theme (low-luminance background).
   bool get isDarkPalette => bgTop.computeLuminance() < 0.3;
 
-  /// Gloomy & Heavy palette (Twilight contemplation)
+  /// Gloomy & Heavy palette (Twilight contemplation / Sanctuary Twilight)
   static const StagePalette gloomy = StagePalette(
-    bgTop: Color(0xFF181E2C),
-    bgBottom: Color(0xFF232B3E),
-    cardSurface: Color(0xFF2A344B),
-    cardBorder: Color(0xFF3D4B6A),
-    primaryText: Color(0xFFF4F1EA),
-    secondaryText: Color(0xFFB0BCCD),
-    accent: Color(0xFFE6B87D),
+    bgTop: Color(0xFF161B26),
+    bgBottom: Color(0xFF1E2433),
+    cardSurface: Color(0xFF242C3D),
+    cardBorder: Color(0xFF364158),
+    primaryText: Color(0xFFEDE8DF),
+    secondaryText: Color(0xFFA5B1C2),
+    accent: Color(0xFFDEB377),
     stageLabel: 'Gloomy & Heavy',
   );
 
-  /// Growing in Sorrow palette (Deep evergreen quiet growth)
+  /// Growing in Sorrow palette (Deep quiet growth in reverent sanctuary dark)
   static const StagePalette growing = StagePalette(
-    bgTop: Color(0xFF1E2D29),
-    bgBottom: Color(0xFF2C3E38),
-    cardSurface: Color(0xFF263833),
-    cardBorder: Color(0xFF435D55),
-    primaryText: Color(0xFFF7F4EB),
-    secondaryText: Color(0xFFC9D1CC),
-    accent: Color(0xFFD48C70),
+    bgTop: Color(0xFF161B26),
+    bgBottom: Color(0xFF1E2433),
+    cardSurface: Color(0xFF242C3D),
+    cardBorder: Color(0xFF364158),
+    primaryText: Color(0xFFEDE8DF),
+    secondaryText: Color(0xFFA5B1C2),
+    accent: Color(0xFFD49E72),
     stageLabel: 'Growing in Sorrow',
   );
 
-  /// Bright & Grateful palette (Sunlit warm linen)
+  /// Bright & Grateful palette (Sunlit sacred manuscript / Eye-soothing warm linen)
   static const StagePalette bright = StagePalette(
-    bgTop: Color(0xFFFFFDF9),
-    bgBottom: Color(0xFFF7EFE2),
-    cardSurface: Color(0xFFFFFFFF),
-    cardBorder: Color(0xFFEFE3CE),
-    primaryText: Color(0xFF2C221E),
-    secondaryText: Color(0xFF7A695C),
-    accent: Color(0xFFD97736),
+    bgTop: Color(0xFFF8F5EE),
+    bgBottom: Color(0xFFEFE8DB),
+    cardSurface: Color(0xFFFCFAF6),
+    cardBorder: Color(0xFFE2D9C8),
+    primaryText: Color(0xFF2E2620),
+    secondaryText: Color(0xFF756A5E),
+    accent: Color(0xFFC47A3B),
     stageLabel: 'Bright & Grateful',
   );
 
-  /// Walking Humbly palette (Pale stone & muted sage)
+  /// Walking Humbly palette (Quiet sacred parchment & gentle warm umber)
   static const StagePalette humble = StagePalette(
-    bgTop: Color(0xFFF2F0EB),
-    bgBottom: Color(0xFFE6E2D8),
-    cardSurface: Color(0xFFFAF8F5),
-    cardBorder: Color(0xFFDCD7CC),
-    primaryText: Color(0xFF262A28),
-    secondaryText: Color(0xFF60655E),
-    accent: Color(0xFF4A5550),
+    bgTop: Color(0xFFF8F5EE),
+    bgBottom: Color(0xFFEFE8DB),
+    cardSurface: Color(0xFFFCFAF6),
+    cardBorder: Color(0xFFE2D9C8),
+    primaryText: Color(0xFF2E2620),
+    secondaryText: Color(0xFF756A5E),
+    accent: Color(0xFFB57C48),
     stageLabel: 'Walking Humbly',
   );
 
   /// Canonical Spiritual Bible Dark Palette (Sanctuary Twilight & Holy Reverence)
   static const StagePalette bibleDark = StagePalette(
-    bgTop: Color(0xFF181E2C),
-    bgBottom: Color(0xFF232B3E),
-    cardSurface: Color(0xFF2A344B),
-    cardBorder: Color(0xFF3D4B6A),
-    primaryText: Color(0xFFF4F1EA),
-    secondaryText: Color(0xFFB0BCCD),
-    accent: Color(0xFFE6B87D),
+    bgTop: Color(0xFF161B26),
+    bgBottom: Color(0xFF1E2433),
+    cardSurface: Color(0xFF242C3D),
+    cardBorder: Color(0xFF364158),
+    primaryText: Color(0xFFEDE8DF),
+    secondaryText: Color(0xFFA5B1C2),
+    accent: Color(0xFFDEB377),
     stageLabel: 'Sanctuary Twilight',
   );
 
   /// Canonical Spiritual Bible Light Palette (Sacred Scripture & Ancient Parchment Linen)
   static const StagePalette bibleLight = StagePalette(
-    bgTop: Color(0xFFFFFDF9),
-    bgBottom: Color(0xFFF7EFE2),
-    cardSurface: Color(0xFFFFFFFF),
-    cardBorder: Color(0xFFEFE3CE),
-    primaryText: Color(0xFF2C221E),
-    secondaryText: Color(0xFF7A695C),
-    accent: Color(0xFFD97736),
+    bgTop: Color(0xFFF8F5EE),
+    bgBottom: Color(0xFFEFE8DB),
+    cardSurface: Color(0xFFFCFAF6),
+    cardBorder: Color(0xFFE2D9C8),
+    primaryText: Color(0xFF2E2620),
+    secondaryText: Color(0xFF756A5E),
+    accent: Color(0xFFC47A3B),
     stageLabel: 'Sacred Scripture',
   );
 

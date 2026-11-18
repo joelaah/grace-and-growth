@@ -22,7 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const List<StagePalette> _pagePalettes = [
     StagePalette.gloomy,
     StagePalette.growing,
-    StagePalette.bright,
+    StagePalette.gloomy,
   ];
 
   @override
@@ -222,7 +222,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: sp.cardSurface,
+                        color: palette.cardSurface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: sp.accent.withValues(alpha: 0.5),
@@ -245,7 +245,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             style: TextStyle(
                               fontSize: isCompact ? 11 : 12,
                               fontWeight: FontWeight.w500,
-                              color: sp.primaryText,
+                              color: palette.primaryText,
                             ),
                           ),
                         ],

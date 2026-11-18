@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bible_glory/models/inshorts_feed_item.dart';
 import 'package:bible_glory/models/tagged_verse.dart';
 import 'package:bible_glory/screens/home_stage_screen.dart';
+import 'package:bible_glory/screens/journal_screen.dart';
 import 'package:bible_glory/theme/mood_stage_theme.dart';
 import 'package:bible_glory/widgets/inshorts_stage_card.dart';
 
@@ -188,6 +189,82 @@ void main() {
       // Verifies 'auto' was migrated to 'dark' or 'light'
       final migrated = prefs.getString('theme_mode');
       expect(migrated == 'dark' || migrated == 'light', isTrue);
+    });
+
+    testWidgets('JournalScreen cards consistently use active theme cardSurface avoiding checkerboard contrast', (tester) async {
+      final verseDark = TaggedVerse(
+        id: 'PSA.34.18',
+        book: 'PSA',
+        chapter: 34,
+        verse: 18,
+        primaryStage: MoodStage.gloomy,
+        moodTags: const ['gloomy'],
+        reflectionsByLang: const {'eng': 'Reflection 1'},
+        textsByLang: const {'eng': 'Dark verse text'},
+      );
+      final verseLight = TaggedVerse(
+        id: 'PSA.100.1',
+        book: 'PSA',
+        chapter: 100,
+        verse: 1,
+        primaryStage: MoodStage.bright,
+        moodTags: const ['bright'],
+        reflectionsByLang: const {'eng': 'Reflection 2'},
+        textsByLang: const {'eng': 'Light verse text'},
+      );
+      final items = [
+        InshortsFeedItem.fromVerse(verseDark, langCode: 'eng'),
+        InshortsFeedItem.fromVerse(verseLight, langCode: 'eng'),
+      ];
+
+      // Pump JournalScreen in dark theme
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: JournalScreen(
+              palette: StagePalette.bibleDark,
+              allFeedItems: items,
+              bookmarkedIds: {items[0].id, items[1].id},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Find the card containers
+      final cardFinders = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final box = widget.decoration as BoxDecoration;
+          return box.color == StagePalette.bibleDark.cardSurface;
+        }
+        return false;
+      });
+
+      // Both cards must use the active dark theme's cardSurface (twilight slate), NOT light cream!
+      expect(cardFinders, findsAtLeastNWidgets(2));
+    });
+
+    testWidgets('Mood chip selector in HomeStageScreen styles selected chip with active theme cardSurface', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      // Initially in Dark mode (bibleDark)
+      // Tap 'Bright & Grateful' mood chip
+      await tester.ensureVisible(find.text(StagePalette.bright.stageLabel));
+      await tester.tap(find.text(StagePalette.bright.stageLabel));
+      await tester.pumpAndSettle();
+
+      // The selected chip must use palette.cardSurface (unified theme), not stagePalette.cardSurface opposite contrast
+      final chipContainers = find.descendant(
+        of: find.widgetWithText(InkWell, StagePalette.bright.stageLabel),
+        matching: find.byType(AnimatedContainer),
+      );
+      expect(chipContainers, findsAtLeastNWidgets(1));
+
+      final containerWidget = tester.widget<AnimatedContainer>(chipContainers.first);
+      final box = containerWidget.decoration as BoxDecoration;
+      expect(box.color, equals(StagePalette.bright.cardSurface));
     });
   });
 }

@@ -18,6 +18,7 @@ import 'inshorts_stage_card.dart';
 /// Contains NO rarity tiers, epic/common labels, or game percentages.
 class MysteryBoxModal extends StatefulWidget {
   final MoodStage activeMood;
+  final StagePalette? palette;
   final String langCode;
   final MysteryBoxEngine? mysteryBoxEngine;
   final void Function(InshortsFeedItem item)? onBookmarkToggle;
@@ -28,6 +29,7 @@ class MysteryBoxModal extends StatefulWidget {
   const MysteryBoxModal({
     super.key,
     required this.activeMood,
+    this.palette,
     this.langCode = 'eng',
     this.mysteryBoxEngine,
     this.onBookmarkToggle,
@@ -40,6 +42,7 @@ class MysteryBoxModal extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     required MoodStage activeMood,
+    StagePalette? palette,
     String langCode = 'eng',
     MysteryBoxEngine? mysteryBoxEngine,
     void Function(InshortsFeedItem item)? onBookmarkToggle,
@@ -53,6 +56,7 @@ class MysteryBoxModal extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => MysteryBoxModal(
         activeMood: activeMood,
+        palette: palette,
         langCode: langCode,
         mysteryBoxEngine: mysteryBoxEngine,
         onBookmarkToggle: onBookmarkToggle,
@@ -198,7 +202,7 @@ class _MysteryBoxModalState extends State<MysteryBoxModal>
 
   @override
   Widget build(BuildContext context) {
-    final palette = widget.activeMood.palette;
+    final palette = widget.palette ?? widget.activeMood.palette;
     final mediaQuery = MediaQuery.of(context);
     final screenHeight = mediaQuery.size.height;
     final isShort = screenHeight < 680;

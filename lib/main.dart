@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
+import 'theme/mood_stage_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,32 @@ class GraceAndGrowthApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: StagePalette.bibleLight.bgTop,
+        cardColor: StagePalette.bibleLight.cardSurface,
+        canvasColor: StagePalette.bibleLight.cardSurface,
+        colorScheme: ColorScheme.light(
+          primary: StagePalette.bibleLight.accent,
+          surface: StagePalette.bibleLight.cardSurface,
+          onSurface: StagePalette.bibleLight.primaryText,
+          outline: StagePalette.bibleLight.cardBorder,
+        ),
+        dividerColor: StagePalette.bibleLight.cardBorder,
+        fontFamily: 'serif',
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: StagePalette.bibleDark.bgTop,
+        cardColor: StagePalette.bibleDark.cardSurface,
+        canvasColor: StagePalette.bibleDark.cardSurface,
+        colorScheme: ColorScheme.dark(
+          primary: StagePalette.bibleDark.accent,
+          surface: StagePalette.bibleDark.cardSurface,
+          onSurface: StagePalette.bibleDark.primaryText,
+          outline: StagePalette.bibleDark.cardBorder,
+        ),
+        dividerColor: StagePalette.bibleDark.cardBorder,
         fontFamily: 'serif',
       ),
       home: const SplashScreen(),

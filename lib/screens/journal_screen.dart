@@ -117,7 +117,7 @@ class _JournalScreenState extends State<JournalScreen> {
     InshortsFeedItem item,
     String? note,
   ) {
-    final cardPalette = item.stage.palette;
+    final stagePalette = item.stage.palette;
 
     return GestureDetector(
       onTap: () => _showDetailSheet(item, note),
@@ -125,10 +125,10 @@ class _JournalScreenState extends State<JournalScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardPalette.cardSurface,
+          color: palette.cardSurface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: cardPalette.cardBorder.withValues(alpha: 0.5),
+            color: palette.cardBorder.withValues(alpha: 0.5),
           ),
           boxShadow: [
             BoxShadow(
@@ -148,7 +148,7 @@ class _JournalScreenState extends State<JournalScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
-                    color: cardPalette.accent.withValues(alpha: 0.14),
+                    color: stagePalette.accent.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
@@ -159,7 +159,7 @@ class _JournalScreenState extends State<JournalScreen> {
                             ? Icons.auto_stories_outlined
                             : Icons.format_quote_rounded,
                         size: 11,
-                        color: cardPalette.accent,
+                        color: stagePalette.accent,
                       ),
                       const SizedBox(width: 3),
                       Text(
@@ -168,7 +168,7 @@ class _JournalScreenState extends State<JournalScreen> {
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
-                          color: cardPalette.accent,
+                          color: stagePalette.accent,
                         ),
                       ),
                     ],
@@ -180,15 +180,15 @@ class _JournalScreenState extends State<JournalScreen> {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: cardPalette.accent,
+                    color: stagePalette.accent,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  cardPalette.stageLabel,
+                  stagePalette.stageLabel,
                   style: TextStyle(
                     fontSize: 10,
-                    color: cardPalette.secondaryText,
+                    color: palette.secondaryText,
                   ),
                 ),
               ],
@@ -203,7 +203,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 fontFamily: 'serif',
                 fontSize: 15,
                 height: 1.4,
-                color: cardPalette.primaryText,
+                color: palette.primaryText,
               ),
             ),
             const SizedBox(height: 6),
@@ -213,7 +213,7 @@ class _JournalScreenState extends State<JournalScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: cardPalette.accent,
+                color: stagePalette.accent,
               ),
             ),
             // Journal note (if any)
@@ -223,7 +223,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: cardPalette.bgTop.withValues(alpha: 0.08),
+                  color: palette.bgTop.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -232,7 +232,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     Icon(
                       Icons.edit_note_outlined,
                       size: 14,
-                      color: cardPalette.secondaryText,
+                      color: palette.secondaryText,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -244,7 +244,7 @@ class _JournalScreenState extends State<JournalScreen> {
                           fontSize: 12,
                           fontStyle: FontStyle.italic,
                           height: 1.3,
-                          color: cardPalette.secondaryText,
+                          color: palette.secondaryText,
                         ),
                       ),
                     ),
@@ -259,7 +259,8 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   void _showDetailSheet(InshortsFeedItem item, String? existingNote) {
-    final cardPalette = item.stage.palette;
+    final palette = widget.palette;
+    final stagePalette = item.stage.palette;
     final noteController = TextEditingController(text: existingNote ?? '');
 
     showModalBottomSheet(
@@ -272,12 +273,12 @@ class _JournalScreenState extends State<JournalScreen> {
             maxHeight: MediaQuery.of(context).size.height * 0.85,
           ),
           decoration: BoxDecoration(
-            color: cardPalette.cardSurface,
+            color: palette.cardSurface,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(
               top: BorderSide(
-                color: cardPalette.cardBorder.withValues(alpha: 0.5),
+                color: palette.cardBorder.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -300,7 +301,7 @@ class _JournalScreenState extends State<JournalScreen> {
                       height: 4,
                       decoration: BoxDecoration(
                         color:
-                            cardPalette.secondaryText.withValues(alpha: 0.3),
+                            palette.secondaryText.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -311,7 +312,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: cardPalette.accent.withValues(alpha: 0.14),
+                      color: stagePalette.accent.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -320,7 +321,7 @@ class _JournalScreenState extends State<JournalScreen> {
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
-                        color: cardPalette.accent,
+                        color: stagePalette.accent,
                       ),
                     ),
                   ),
@@ -332,7 +333,7 @@ class _JournalScreenState extends State<JournalScreen> {
                       fontFamily: 'serif',
                       fontSize: 18,
                       height: 1.5,
-                      color: cardPalette.primaryText,
+                      color: palette.primaryText,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -341,7 +342,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: cardPalette.accent,
+                      color: stagePalette.accent,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -352,17 +353,17 @@ class _JournalScreenState extends State<JournalScreen> {
                       fontFamily: 'serif',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: cardPalette.primaryText,
+                      color: palette.primaryText,
                     ),
                   ),
                   const SizedBox(height: 10),
                   Container(
                     decoration: BoxDecoration(
                       color:
-                          cardPalette.bgTop.withValues(alpha: 0.06),
+                          palette.bgTop.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: cardPalette.cardBorder
+                        color: palette.cardBorder
                             .withValues(alpha: 0.4),
                       ),
                     ),
@@ -371,14 +372,14 @@ class _JournalScreenState extends State<JournalScreen> {
                       maxLines: 4,
                       style: TextStyle(
                         fontSize: 14,
-                        color: cardPalette.primaryText,
+                        color: palette.primaryText,
                         height: 1.4,
                       ),
                       decoration: InputDecoration(
                         hintText:
                             'What does this passage mean to you today?',
                         hintStyle: TextStyle(
-                          color: cardPalette.secondaryText
+                          color: palette.secondaryText
                               .withValues(alpha: 0.5),
                           fontSize: 13,
                         ),
@@ -405,7 +406,7 @@ class _JournalScreenState extends State<JournalScreen> {
                           icon: const Icon(Icons.check_rounded, size: 18),
                           label: const Text('Save'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: cardPalette.accent,
+                            backgroundColor: palette.accent,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding:
@@ -429,8 +430,8 @@ class _JournalScreenState extends State<JournalScreen> {
                         label: const Text('Remove'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              cardPalette.secondaryText.withValues(alpha: 0.12),
-                          foregroundColor: cardPalette.secondaryText,
+                              palette.secondaryText.withValues(alpha: 0.12),
+                          foregroundColor: palette.secondaryText,
                           elevation: 0,
                           padding:
                               const EdgeInsets.symmetric(vertical: 12),
@@ -483,9 +484,9 @@ class _JournalScreenState extends State<JournalScreen> {
                       icon: const Icon(Icons.diversity_3_outlined, size: 16),
                       label: const Text('Share Anonymously with Community'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: cardPalette.accent,
+                        foregroundColor: stagePalette.accent,
                         side: BorderSide(
-                          color: cardPalette.accent.withValues(alpha: 0.5),
+                          color: stagePalette.accent.withValues(alpha: 0.5),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 11),
                         shape: RoundedRectangleBorder(

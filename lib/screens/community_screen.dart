@@ -146,16 +146,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
         final stage = (moodIndex >= 0 && moodIndex < MoodStage.values.length)
             ? MoodStage.values[moodIndex]
             : MoodStage.gloomy;
-        final cardPalette = stage.palette;
+        final stagePalette = stage.palette;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 14.0),
           padding: const EdgeInsets.all(18.0),
           decoration: BoxDecoration(
-            color: cardPalette.cardSurface,
+            color: palette.cardSurface,
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
-              color: cardPalette.cardBorder.withValues(alpha: 0.6),
+              color: palette.cardBorder.withValues(alpha: 0.6),
             ),
           ),
           child: Column(
@@ -171,16 +171,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         height: 7.0,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: cardPalette.accent,
+                          color: stagePalette.accent,
                         ),
                       ),
                       const SizedBox(width: 6.0),
                       Text(
-                        cardPalette.stageLabel,
+                        stagePalette.stageLabel,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w500,
-                          color: cardPalette.secondaryText,
+                          color: palette.secondaryText,
                         ),
                       ),
                     ],
@@ -190,7 +190,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     style: TextStyle(
                       fontSize: 11.0,
                       fontStyle: FontStyle.italic,
-                      color: cardPalette.secondaryText.withValues(alpha: 0.7),
+                      color: palette.secondaryText.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -203,7 +203,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     fontFamily: 'serif',
                     fontSize: 15.5,
                     height: 1.4,
-                    color: cardPalette.primaryText,
+                    color: palette.primaryText,
                   ),
                 ),
               ],
@@ -212,7 +212,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 Container(
                   padding: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
-                    color: cardPalette.bgTop.withValues(alpha: 0.08),
+                    color: palette.bgTop.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Text(
@@ -220,7 +220,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     style: TextStyle(
                       fontSize: 13.0,
                       height: 1.4,
-                      color: cardPalette.primaryText.withValues(alpha: 0.9),
+                      color: palette.primaryText.withValues(alpha: 0.9),
                     ),
                   ),
                 ),
