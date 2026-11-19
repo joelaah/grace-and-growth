@@ -51,7 +51,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
 
         return RepaintBoundary(
           key: _cardBoundaryKey,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOutCubic,
             margin: EdgeInsets.symmetric(
               horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
               vertical: isShort ? 4.0 : 8.0,
@@ -121,7 +123,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
     final palette = widget.palette;
     final item = widget.item;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
       padding: EdgeInsets.fromLTRB(
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
         isVeryShort ? 6.0 : (isShort ? 10.0 : 18.0),
@@ -136,7 +140,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
             children: [
               // Source badge ("BIBLE VERSE" vs. "INSPIRATIONAL QUOTE")
               Flexible(
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   padding: EdgeInsets.symmetric(
                     horizontal: isNarrow ? 6.0 : 8.5,
                     vertical: isVeryShort ? 2.5 : 4.0,
@@ -163,14 +169,16 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                           color: palette.accent,
                         ),
                         const SizedBox(width: 4.0),
-                        Text(
-                          item.sourceBadge,
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
                           style: TextStyle(
                             fontSize: isVeryShort ? 9.0 : 10.0,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
                             color: palette.accent,
                           ),
+                          child: Text(item.sourceBadge),
                         ),
                       ],
                     ),
@@ -182,7 +190,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
 
               // Category tag pill
               Flexible(
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   padding: EdgeInsets.symmetric(
                     horizontal: 6.0,
                     vertical: isVeryShort ? 2.5 : 4.0,
@@ -207,14 +217,18 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                           color: palette.accent,
                         ),
                         const SizedBox(width: 4.0),
-                        Text(
-                          item.category,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
                           style: TextStyle(
                             fontSize: isVeryShort ? 9.5 : 11.0,
                             fontWeight: FontWeight.w500,
                             color: palette.secondaryText,
+                          ),
+                          child: Text(
+                            item.category,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -234,8 +248,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                 physics: const NeverScrollableScrollPhysics(),
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: isVeryShort ? 1.0 : (isShort ? 2.0 : 4.0)),
-                  child: Text(
-                    '“${item.mainText}”',
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInOutCubic,
                     style: TextStyle(
                       fontFamily: 'serif',
                       fontSize: isVeryShort ? 14.0 : (isShort ? 17.0 : 20.0),
@@ -243,6 +258,10 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                       fontWeight: FontWeight.w400,
                       color: palette.primaryText,
                       letterSpacing: 0.1,
+                    ),
+                    child: Text(
+                      '“${item.mainText}”',
+                      style: const TextStyle(fontFamily: 'serif'),
                     ),
                   ),
                 ),
@@ -257,14 +276,18 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  item.attribution,
-                  overflow: TextOverflow.ellipsis,
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   style: TextStyle(
                     fontSize: isVeryShort ? 11.0 : (isShort ? 12.0 : 13.5),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.6,
                     color: palette.accent,
+                  ),
+                  child: Text(
+                    item.attribution,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -276,7 +299,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
                         width: 4.0,
                         height: 4.0,
                         decoration: BoxDecoration(
@@ -285,14 +310,18 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                         ),
                       ),
                       const SizedBox(width: 4.0),
-                      Text(
-                        item.subTag,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
                         style: TextStyle(
                           fontSize: isVeryShort ? 9.5 : (isShort ? 10.5 : 11.5),
                           fontWeight: FontWeight.w400,
                           color: palette.secondaryText,
+                        ),
+                        child: Text(
+                          item.subTag,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ],
@@ -315,16 +344,19 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
       alignment: Alignment.center,
       children: [
         // Horizontal divider line
-        Divider(
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic,
           height: 1.0,
-          thickness: 1.0,
           color: palette.cardBorder.withValues(alpha: 0.55),
         ),
 
         // Floating action pill
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOutCubic,
             decoration: BoxDecoration(
               color: palette.cardSurface,
               borderRadius: BorderRadius.circular(24.0),
@@ -387,13 +419,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                                 color: isSpeaking ? palette.accent : palette.secondaryText,
                               ),
                               const SizedBox(width: 4.0),
-                              Text(
-                                isSpeaking ? 'Playing' : 'Listen',
+                              AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 600),
+                                curve: Curves.easeInOutCubic,
                                 style: TextStyle(
                                   fontSize: 11.0,
                                   fontWeight: isSpeaking ? FontWeight.w700 : FontWeight.w500,
                                   color: isSpeaking ? palette.accent : palette.secondaryText,
                                 ),
+                                child: Text(isSpeaking ? 'Playing' : 'Listen'),
                               ),
                             ],
                           );
@@ -404,7 +438,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                 ),
 
                 // Separator
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   width: 1.0,
                   height: 14.0,
                   margin: const EdgeInsets.symmetric(horizontal: 3.0),
@@ -428,13 +464,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                             color: widget.isBookmarked ? palette.accent : palette.secondaryText,
                           ),
                           const SizedBox(width: 4.0),
-                          Text(
-                            widget.isBookmarked ? 'Saved' : 'Save',
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeInOutCubic,
                             style: TextStyle(
                               fontSize: 11.0,
                               fontWeight: widget.isBookmarked ? FontWeight.w600 : FontWeight.w500,
                               color: widget.isBookmarked ? palette.accent : palette.secondaryText,
                             ),
+                            child: Text(widget.isBookmarked ? 'Saved' : 'Save'),
                           ),
                         ],
                       ),
@@ -443,7 +481,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                 ),
 
                 // Separator
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   width: 1.0,
                   height: 14.0,
                   margin: const EdgeInsets.symmetric(horizontal: 3.0),
@@ -476,13 +516,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                             color: palette.secondaryText,
                           ),
                           const SizedBox(width: 4.0),
-                          Text(
-                            'Share',
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeInOutCubic,
                             style: TextStyle(
                               fontSize: 11.0,
                               fontWeight: FontWeight.w500,
                               color: palette.secondaryText,
                             ),
+                            child: const Text('Share'),
                           ),
                         ],
                       ),
@@ -492,7 +534,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
 
                 if (widget.onResearch != null) ...[
                   // Separator
-                  Container(
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInOutCubic,
                     width: 1.0,
                     height: 14.0,
                     margin: const EdgeInsets.symmetric(horizontal: 3.0),
@@ -516,13 +560,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                               color: palette.accent,
                             ),
                             const SizedBox(width: 4.0),
-                            Text(
-                              'Research',
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.easeInOutCubic,
                               style: TextStyle(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w600,
                                 color: palette.accent,
                               ),
+                              child: const Text('Research'),
                             ),
                           ],
                         ),
@@ -549,7 +595,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
     final palette = widget.palette;
     final item = widget.item;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
       color: palette.cardSurface.withValues(alpha: 0.7),
       padding: EdgeInsets.fromLTRB(
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
@@ -564,7 +612,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOutCubic,
                 width: isVeryShort ? 20.0 : (isShort ? 24.0 : 28.0),
                 height: isVeryShort ? 20.0 : (isShort ? 24.0 : 28.0),
                 decoration: BoxDecoration(
@@ -585,13 +635,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        item.reflectionTitle,
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
                         style: TextStyle(
                           fontSize: isVeryShort ? 12.0 : (isShort ? 13.0 : 14.5),
                           fontWeight: FontWeight.w600,
                           color: palette.primaryText,
                         ),
+                        child: Text(item.reflectionTitle),
                       ),
                       const SizedBox(width: 8.0),
                       Row(
@@ -603,13 +655,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                             color: palette.secondaryText.withValues(alpha: 0.8),
                           ),
                           const SizedBox(width: 3.0),
-                          Text(
-                            item.readingTime,
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeInOutCubic,
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w400,
                               color: palette.secondaryText,
                             ),
+                            child: Text(item.readingTime),
                           ),
                         ],
                       ),
@@ -629,14 +683,16 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    item.reflectionContent,
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInOutCubic,
                     style: TextStyle(
                       fontSize: isVeryShort ? 11.0 : (isShort ? 12.5 : 13.5),
                       height: 1.4,
                       fontWeight: FontWeight.w400,
                       color: palette.primaryText.withValues(alpha: 0.9),
                     ),
+                    child: Text(item.reflectionContent),
                   ),
                   SizedBox(height: isVeryShort ? 2.0 : (isShort ? 4.0 : 8.0)),
                   // Ambient prompt
@@ -653,14 +709,16 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                       ),
                       const SizedBox(width: 4.0),
                       Expanded(
-                        child: Text(
-                          item.promptText,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
                           style: TextStyle(
                             fontSize: isVeryShort ? 10.0 : (isShort ? 11.0 : 12.0),
                             fontStyle: FontStyle.italic,
                             height: 1.3,
                             color: palette.secondaryText,
                           ),
+                          child: Text(item.promptText),
                         ),
                       ),
                     ],
@@ -685,14 +743,16 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                       color: palette.secondaryText.withValues(alpha: 0.55),
                     ),
                     const SizedBox(width: 2.0),
-                    Text(
-                      'Swipe up for next',
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOutCubic,
                       style: TextStyle(
                         fontSize: isVeryShort ? 9.5 : 10.5,
                         fontWeight: FontWeight.w400,
                         letterSpacing: 0.4,
                         color: palette.secondaryText.withValues(alpha: 0.55),
                       ),
+                      child: const Text('Swipe up for next'),
                     ),
                   ],
                 ),

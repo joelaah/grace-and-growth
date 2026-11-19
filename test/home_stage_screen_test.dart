@@ -191,25 +191,28 @@ void main() {
       expect(find.text('Un Pensamiento Suave'), findsWidgets);
     });
 
-    testWidgets('Tapping mood chip jumps/scrolls to that mood and transitions gradient', (tester) async {
+    testWidgets('Tapping mood chip jumps/scrolls to that mood and preserves active theme mode', (tester) async {
       final screenKey = GlobalKey<HomeStageScreenState>();
       await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
       await tester.pumpAndSettle();
 
       final state = screenKey.currentState!;
+      expect(state.themeMode, equals('dark'));
 
       // Tap 'Bright & Grateful'
       await tester.ensureVisible(find.text(StagePalette.bright.stageLabel));
       await tester.tap(find.text(StagePalette.bright.stageLabel));
       await tester.pumpAndSettle();
 
+      // activeStage is updated for mood navigation/filtering, but global themeMode stays untouched
       expect(state.activeStage, equals(MoodStage.bright));
+      expect(state.themeMode, equals('dark'));
 
       final animatedContainer = tester.widget<AnimatedContainer>(
         find.descendant(of: find.byType(Scaffold), matching: find.byType(AnimatedContainer)).first,
       );
       final gradient = (animatedContainer.decoration as BoxDecoration).gradient as LinearGradient;
-      expect(gradient.colors, [StagePalette.bright.bgTop, StagePalette.bright.bgBottom]);
+      expect(gradient.colors, [StagePalette.bibleDark.bgTop, StagePalette.bibleDark.bgBottom]);
     });
 
     testWidgets('Tapping Save toggles bookmark state and displays floating notice', (tester) async {

@@ -249,13 +249,20 @@ void main() {
       await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
       await tester.pumpAndSettle();
 
+      final state = screenKey.currentState!;
+      expect(state.themeMode, equals('dark'));
+
       // Initially in Dark mode (bibleDark)
       // Tap 'Bright & Grateful' mood chip
       await tester.ensureVisible(find.text(StagePalette.bright.stageLabel));
       await tester.tap(find.text(StagePalette.bright.stageLabel));
       await tester.pumpAndSettle();
 
-      // The selected chip must use palette.cardSurface (unified theme), not stagePalette.cardSurface opposite contrast
+      // Theme mode is preserved in Dark mode
+      expect(state.themeMode, equals('dark'));
+      expect(state.activeStage, equals(MoodStage.bright));
+
+      // The selected chip must use palette.cardSurface (active dark theme), avoiding opposite contrast
       final chipContainers = find.descendant(
         of: find.widgetWithText(InkWell, StagePalette.bright.stageLabel),
         matching: find.byType(AnimatedContainer),
@@ -264,7 +271,93 @@ void main() {
 
       final containerWidget = tester.widget<AnimatedContainer>(chipContainers.first);
       final box = containerWidget.decoration as BoxDecoration;
-      expect(box.color, equals(StagePalette.bright.cardSurface));
+      expect(box.color, equals(StagePalette.bibleDark.cardSurface));
+    });
+
+    testWidgets('Tapping mood chips never switches global theme mode across both dark and light modes', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.themeMode, equals('dark'));
+
+      // 1. In Dark mode, tapping 'Bright & Grateful' stays in Dark mode
+      await tester.ensureVisible(find.text(StagePalette.bright.stageLabel));
+      await tester.tap(find.text(StagePalette.bright.stageLabel));
+      await tester.pumpAndSettle();
+
+      expect(state.activeStage, equals(MoodStage.bright));
+      expect(state.themeMode, equals('dark'));
+      expect(state.currentPalette.isDarkPalette, isTrue);
+
+      // 2. In Dark mode, tapping 'Growing in Sorrow' stays in Dark mode
+      await tester.ensureVisible(find.text(StagePalette.growing.stageLabel));
+      await tester.tap(find.text(StagePalette.growing.stageLabel));
+      await tester.pumpAndSettle();
+
+      expect(state.activeStage, equals(MoodStage.growing));
+      expect(state.themeMode, equals('dark'));
+      expect(state.currentPalette.isDarkPalette, isTrue);
+
+      // 3. Switch to Light mode via sun/moon theme toggle button
+      final lightToggleFinder = find.byTooltip('Switch to Light mode (Sacred Scripture)');
+      await tester.tap(lightToggleFinder);
+      await tester.pumpAndSettle();
+
+      expect(state.themeMode, equals('light'));
+      expect(state.currentPalette.isDarkPalette, isFalse);
+
+      // 4. In Light mode, tapping 'Growing in Sorrow' stays in Light mode
+      await tester.ensureVisible(find.text(StagePalette.growing.stageLabel));
+      await tester.tap(find.text(StagePalette.growing.stageLabel));
+      await tester.pumpAndSettle();
+
+      expect(state.activeStage, equals(MoodStage.growing));
+      expect(state.themeMode, equals('light'));
+      expect(state.currentPalette.isDarkPalette, isFalse);
+
+      // 5. In Light mode, tapping 'Gloomy & Heavy' stays in Light mode
+      await tester.ensureVisible(find.text(StagePalette.gloomy.stageLabel));
+      await tester.tap(find.text(StagePalette.gloomy.stageLabel));
+      await tester.pumpAndSettle();
+
+      expect(state.activeStage, equals(MoodStage.gloomy));
+      expect(state.themeMode, equals('light'));
+      expect(state.currentPalette.isDarkPalette, isFalse);
+
+      // 6. In Light mode, tapping 'Walking Humbly' stays in Light mode
+      await tester.ensureVisible(find.text(StagePalette.humble.stageLabel));
+      await tester.tap(find.text(StagePalette.humble.stageLabel));
+      await tester.pumpAndSettle();
+
+      expect(state.activeStage, equals(MoodStage.humble));
+      expect(state.themeMode, equals('light'));
+      expect(state.currentPalette.isDarkPalette, isFalse);
+    });
+
+    testWidgets('Theme transition provides smooth animation with AnimatedTheme and AnimatedContainer', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final animatedThemeFinder = find.descendant(
+        of: find.byType(HomeStageScreen),
+        matching: find.byType(AnimatedTheme),
+      );
+      expect(animatedThemeFinder, findsOneWidget);
+
+      final animatedTheme = tester.widget<AnimatedTheme>(animatedThemeFinder);
+      expect(animatedTheme.duration, equals(const Duration(milliseconds: 600)));
+      expect(animatedTheme.curve, equals(Curves.easeInOutCubic));
+
+      final scaffoldContainerFinder = find.descendant(
+        of: find.byType(Scaffold),
+        matching: find.byType(AnimatedContainer),
+      );
+      final scaffoldContainer = tester.widget<AnimatedContainer>(scaffoldContainerFinder.first);
+      expect(scaffoldContainer.duration, equals(const Duration(milliseconds: 600)));
+      expect(scaffoldContainer.curve, equals(Curves.easeInOutCubic));
     });
   });
 }

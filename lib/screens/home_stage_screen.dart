@@ -94,6 +94,11 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   PageController get pageController => _pageController;
   ContentFilter get currentFilter => _currentFilter;
   List<InshortsFeedItem> get displayedItems => _displayedItems;
+  String get themeMode => _themeMode;
+  bool get isDarkMode => _themeMode == 'dark';
+  StagePalette get currentPalette =>
+      (_themeMode == 'dark' ? StagePalette.bibleDark : StagePalette.bibleLight)
+          .copyWith(accent: activeStage.palette.accent);
 
   static const List<String> _languages = ['eng', 'lus', 'hin', 'spa'];
 
@@ -133,7 +138,6 @@ class HomeStageScreenState extends State<HomeStageScreen> {
       if (targetIndex != -1) {
         startPage = targetIndex;
         activeStage = _displayedItems[targetIndex].stage;
-        _themeMode = activeStage.palette.isDarkPalette ? 'dark' : 'light';
       } else {
         final initialIndex =
             _displayedItems.indexWhere((item) => item.stage == activeStage);
@@ -252,7 +256,6 @@ class HomeStageScreenState extends State<HomeStageScreen> {
             if (activeStage != targetStage) {
               setState(() {
                 activeStage = targetStage;
-                _themeMode = activeStage.palette.isDarkPalette ? 'dark' : 'light';
               });
             }
           }
@@ -328,10 +331,12 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   }
 
   /// Jumps or smoothly scrolls the feed to the first card matching the selected [stage].
+  ///
+  /// Preserves the active global theme mode (Dark Sanctuary Twilight vs Light Sacred Scripture)
+  /// so selecting moods never causes harsh or jarring theme shifts.
   Future<void> _jumpToStage(MoodStage stage) async {
     setState(() {
       activeStage = stage;
-      _themeMode = stage.palette.isDarkPalette ? 'dark' : 'light';
     });
 
     // Record mood for today
@@ -494,7 +499,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = activeStage.palette;
+    final isDark = _themeMode == 'dark';
+    final basePalette = isDark ? StagePalette.bibleDark : StagePalette.bibleLight;
+    final palette = basePalette.copyWith(accent: activeStage.palette.accent);
 
     final mediaQuery = MediaQuery.of(context);
     final textScale = mediaQuery.textScaler.scale(1.0);
@@ -502,104 +509,142 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     final isShortScreen = screenHeight < 680 || textScale > 1.25;
     final isVeryShortScreen = screenHeight < 500;
 
-    return Scaffold(
-      body: AnimatedContainer(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOutCubic,
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [palette.bgTop, palette.bgBottom],
-          ),
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isShort = constraints.maxHeight < 600 || textScale > 1.25;
-              final isVeryShort = constraints.maxHeight < 460;
-              final isNarrow = constraints.maxWidth < 340 || textScale > 1.25;
-              final isWide = constraints.maxWidth >= 720;
-              final horizontalPadding = isNarrow ? 10.0 : (isWide ? 24.0 : 20.0);
+    final themeData = ThemeData(
+      useMaterial3: true,
+      brightness: isDark ? Brightness.dark : Brightness.light,
+      scaffoldBackgroundColor: palette.bgTop,
+      cardColor: palette.cardSurface,
+      canvasColor: palette.cardSurface,
+      colorScheme: isDark
+          ? ColorScheme.dark(
+              primary: palette.accent,
+              surface: palette.cardSurface,
+              onSurface: palette.primaryText,
+              outline: palette.cardBorder,
+            )
+          : ColorScheme.light(
+              primary: palette.accent,
+              surface: palette.cardSurface,
+              onSurface: palette.primaryText,
+              outline: palette.cardBorder,
+            ),
+      dividerColor: palette.cardBorder,
+      iconTheme: IconThemeData(
+        color: palette.secondaryText,
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.transparent,
+        selectedItemColor: palette.accent,
+        unselectedItemColor: palette.secondaryText.withValues(alpha: 0.75),
+      ),
+      fontFamily: 'serif',
+      fontFamilyFallback: const ['Noto Sans Devanagari'],
+    );
 
-              return Focus(
-                focusNode: _focusNode,
-                autofocus: true,
-                onKeyEvent: (node, event) {
-                  // Only handle keyboard for Reflect tab (feed)
-                  if (_currentNavIndex != 1) return KeyEventResult.ignored;
-                  if (event is KeyDownEvent || event is KeyRepeatEvent) {
-                    if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
-                        event.logicalKey == LogicalKeyboardKey.pageDown ||
-                        (event.logicalKey == LogicalKeyboardKey.space &&
-                            !HardwareKeyboard.instance.isShiftPressed)) {
-                      _animateToRelativePage(1);
-                      return KeyEventResult.handled;
-                    } else if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
-                        event.logicalKey == LogicalKeyboardKey.pageUp ||
-                        (event.logicalKey == LogicalKeyboardKey.space &&
-                            HardwareKeyboard.instance.isShiftPressed)) {
-                      _animateToRelativePage(-1);
-                      return KeyEventResult.handled;
+    return AnimatedTheme(
+      data: themeData,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: AnimatedContainer(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic,
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [palette.bgTop, palette.bgBottom],
+            ),
+          ),
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isShort = constraints.maxHeight < 600 || textScale > 1.25;
+                final isVeryShort = constraints.maxHeight < 460;
+                final isNarrow = constraints.maxWidth < 340 || textScale > 1.25;
+                final isWide = constraints.maxWidth >= 720;
+                final horizontalPadding = isNarrow ? 10.0 : (isWide ? 24.0 : 20.0);
+
+                return Focus(
+                  focusNode: _focusNode,
+                  autofocus: true,
+                  onKeyEvent: (node, event) {
+                    // Only handle keyboard for Reflect tab (feed)
+                    if (_currentNavIndex != 1) return KeyEventResult.ignored;
+                    if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                      if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+                          event.logicalKey == LogicalKeyboardKey.pageDown ||
+                          (event.logicalKey == LogicalKeyboardKey.space &&
+                              !HardwareKeyboard.instance.isShiftPressed)) {
+                        _animateToRelativePage(1);
+                        return KeyEventResult.handled;
+                      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+                          event.logicalKey == LogicalKeyboardKey.pageUp ||
+                          (event.logicalKey == LogicalKeyboardKey.space &&
+                              HardwareKeyboard.instance.isShiftPressed)) {
+                        _animateToRelativePage(-1);
+                        return KeyEventResult.handled;
+                      }
                     }
-                  }
-                  return KeyEventResult.ignored;
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Top Bar with App Title, Filter Toggle, and Language Selector
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        horizontalPadding,
-                        isVeryShort ? 4.0 : (isShort ? 6.0 : 12.0),
-                        horizontalPadding,
-                        0.0,
+                    return KeyEventResult.ignored;
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Top Bar with App Title, Filter Toggle, and Language Selector
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          isVeryShort ? 4.0 : (isShort ? 6.0 : 12.0),
+                          horizontalPadding,
+                          0.0,
+                        ),
+                        child: _buildHeaderBar(
+                          palette,
+                          isShort: isShort,
+                          isVeryShort: isVeryShort,
+                          isNarrow: isNarrow,
+                        ),
                       ),
-                      child: _buildHeaderBar(
-                        palette,
-                        isShort: isShort,
-                        isVeryShort: isVeryShort,
-                        isNarrow: isNarrow,
-                      ),
-                    ),
-                    SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
+                      SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
 
-                    // "How is your heart today?" mood chips
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                      child: _buildMoodSection(
-                        palette,
-                        isShort: isShort,
-                        isVeryShort: isVeryShort,
-                        isNarrow: isNarrow,
-                        textScale: textScale,
+                      // "How is your heart today?" mood chips
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                        child: _buildMoodSection(
+                          palette,
+                          isShort: isShort,
+                          isVeryShort: isVeryShort,
+                          isNarrow: isNarrow,
+                          textScale: textScale,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
+                      SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
 
-                    // Tab content area
-                    Expanded(
-                      child: _buildTabContent(palette),
-                    ),
-                  ],
-                ),
-              );
-            },
+                      // Tab content area
+                      Expanded(
+                        child: _buildTabContent(palette),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
+        bottomNavigationBar: _buildBottomNav(
+          palette,
+          isShort: isShortScreen,
+          isVeryShort: isVeryShortScreen,
+        ),
+        floatingActionButton: _currentNavIndex == 1
+            ? _buildForYouFloatingButton(palette)
+            : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
-      bottomNavigationBar: _buildBottomNav(
-        palette,
-        isShort: isShortScreen,
-        isVeryShort: isVeryShortScreen,
-      ),
-      floatingActionButton: _currentNavIndex == 1
-          ? _buildForYouFloatingButton(palette)
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -852,7 +897,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
               // Row 1: App title with icon full width (prevents truncation to "Gr...")
               Row(
                 children: [
-                  Container(
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInOutCubic,
                     width: isVeryShort ? 26.0 : (isShort ? 28.0 : 32.0),
                     height: isVeryShort ? 26.0 : (isShort ? 28.0 : 32.0),
                     decoration: BoxDecoration(
@@ -875,10 +922,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Grace & Growth',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
                           style: TextStyle(
                             fontFamily: 'serif',
                             fontSize: isVeryShort ? 15.0 : (isShort ? 16.5 : 18.0),
@@ -886,15 +932,25 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                             letterSpacing: -0.2,
                             color: palette.primaryText,
                           ),
+                          child: const Text(
+                            'Grace & Growth',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontFamily: 'serif'),
+                          ),
                         ),
-                        Text(
-                          'Daily Sanctuary • Spreading the Gospel',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
                           style: TextStyle(
                             fontSize: isVeryShort ? 9.5 : (isShort ? 10.0 : 10.5),
                             fontWeight: FontWeight.w400,
                             color: palette.secondaryText,
+                          ),
+                          child: const Text(
+                            'Daily Sanctuary • Spreading the Gospel',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -935,7 +991,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                 Expanded(
                   child: Row(
                     children: [
-                      Container(
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
                         width: isShort ? 28.0 : 34.0,
                         height: isShort ? 28.0 : 34.0,
                         decoration: BoxDecoration(
@@ -958,10 +1016,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'Grace & Growth',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.easeInOutCubic,
                               style: TextStyle(
                                 fontFamily: 'serif',
                                 fontSize: isShort ? 17.0 : 19.0,
@@ -969,15 +1026,25 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                                 letterSpacing: -0.2,
                                 color: palette.primaryText,
                               ),
+                              child: const Text(
+                                'Grace & Growth',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontFamily: 'serif'),
+                              ),
                             ),
-                            Text(
-                              'Daily Sanctuary • Spreading the Gospel',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.easeInOutCubic,
                               style: TextStyle(
                                 fontSize: isShort ? 10.0 : 11.0,
                                 fontWeight: FontWeight.w400,
                                 color: palette.secondaryText,
+                              ),
+                              child: const Text(
+                                'Daily Sanctuary • Spreading the Gospel',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -1036,10 +1103,14 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(6),
-            child: Icon(
-              icon,
-              size: 18,
-              color: palette.secondaryText,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              child: Icon(
+                icon,
+                key: ValueKey(icon),
+                size: 18,
+                color: palette.secondaryText,
+              ),
             ),
           ),
         ),
@@ -1145,7 +1216,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   /// Compact Language Selector pill (English, Mizo, हिंदी, Español)
   Widget _buildLanguageSelectorPill(StagePalette palette, {bool isCompact = false}) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
         color: palette.cardSurface.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24.0),
@@ -1184,14 +1257,16 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                 color: isSelected ? palette.accent : Colors.transparent,
                 borderRadius: BorderRadius.circular(16.0),
               ),
-              child: Text(
-                label,
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
                 style: TextStyle(
                   fontSize: 11.0,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected ? Colors.white : palette.secondaryText,
                   letterSpacing: 0.3,
                 ),
+                child: Text(label),
               ),
             ),
           );
@@ -1202,7 +1277,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   /// Compact Filter Toggle ("All • Verses • Quotes")
   Widget _buildFilterToggle(StagePalette palette) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
         color: palette.cardSurface.withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(20.0),
@@ -1238,12 +1315,14 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   Widget _buildFilterDot(StagePalette palette) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2.5),
-      child: Text(
-        '•',
+      child: AnimatedDefaultTextStyle(
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
         style: TextStyle(
           fontSize: 11.0,
           color: palette.secondaryText.withValues(alpha: 0.45),
         ),
+        child: const Text('•'),
       ),
     );
   }
@@ -1266,14 +1345,16 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           color: isSelected ? palette.accent : Colors.transparent,
           borderRadius: BorderRadius.circular(16.0),
         ),
-        child: Text(
-          label,
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
           style: TextStyle(
             fontSize: 11.0,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             color: isSelected ? Colors.white : palette.secondaryText,
             letterSpacing: 0.2,
           ),
+          child: Text(label),
         ),
       ),
     );
@@ -1300,15 +1381,20 @@ class HomeStageScreenState extends State<HomeStageScreen> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  'How is your heart today?',
-                  maxLines: 1,
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   style: TextStyle(
                     fontFamily: 'serif',
                     fontSize: isVeryShort ? 14.0 : (isShort ? 16.0 : 18.5),
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.2,
                     color: palette.primaryText,
+                  ),
+                  child: const Text(
+                    'How is your heart today?',
+                    maxLines: 1,
+                    style: TextStyle(fontFamily: 'serif'),
                   ),
                 ),
               ),
@@ -1331,13 +1417,15 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                         color: palette.accent,
                       ),
                       const SizedBox(width: 4.0),
-                      Text(
-                        'Random',
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
                         style: TextStyle(
                           fontSize: isVeryShort ? 9.5 : 11.0,
                           fontWeight: FontWeight.w500,
                           color: palette.secondaryText,
                         ),
+                        child: const Text('Random'),
                       ),
                     ],
                   ),
@@ -1348,14 +1436,18 @@ class HomeStageScreenState extends State<HomeStageScreen> {
         ),
         if (!hideSubtitle) ...[
           const SizedBox(height: 2.0),
-          Text(
-            'Choose where you find yourself—no need to put on a brave face.',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOutCubic,
             style: TextStyle(
               fontSize: 12.0,
               fontWeight: FontWeight.w400,
               color: palette.secondaryText,
+            ),
+            child: const Text(
+              'Choose where you find yourself—no need to put on a brave face.',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -1378,8 +1470,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                     },
                     borderRadius: BorderRadius.circular(24.0),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic,
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOutCubic,
                       padding: EdgeInsets.symmetric(
                         horizontal: isVeryShort ? 7.0 : (isShort ? 8.5 : 10.5),
                         vertical: isVeryShort ? 3.5 : (isShort ? 4.5 : 6.5),
@@ -1409,7 +1501,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeInOutCubic,
                             width: isVeryShort ? 5.0 : 7.0,
                             height: isVeryShort ? 5.0 : 7.0,
                             decoration: BoxDecoration(
@@ -1420,8 +1513,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                             ),
                           ),
                           const SizedBox(width: 5.0),
-                          Text(
-                            stagePalette.stageLabel,
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeInOutCubic,
                             style: TextStyle(
                               fontSize: isVeryShort ? 10.0 : (isShort ? 11.0 : 12.0),
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -1429,6 +1523,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                                   ? palette.primaryText
                                   : palette.secondaryText,
                             ),
+                            child: Text(stagePalette.stageLabel),
                           ),
                         ],
                       ),
@@ -1449,7 +1544,9 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     bool isShort = false,
     bool isVeryShort = false,
   }) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
         color: palette.cardSurface.withValues(alpha: 0.96),
         border: Border(
