@@ -1,7 +1,8 @@
 {
     "name": "Grace & Growth - Daily Sanctuary",
     "short_name": "Grace & Growth",
-    "start_url": ".",
+    "scope": "/grace-and-growth/",
+    "start_url": "/grace-and-growth/",
     "display": "standalone",
     "background_color": "#181E2C",
     "theme_color": "#E6B87D",

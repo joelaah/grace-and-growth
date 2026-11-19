@@ -3,8 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/tagged_verse.dart';
 import '../models/inshorts_feed_item.dart';
 import '../services/quote_api_service.dart';
+import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
 import '../utils/daily_selection_engine.dart';
+import '../widgets/aesthetic_share_modal.dart';
+import '../widgets/bible_research_modal.dart';
 import '../widgets/contemplation_timer.dart';
 import '../widgets/notification_time_picker.dart';
 
@@ -401,17 +404,98 @@ class _TodayScreenState extends State<TodayScreen> {
                   ),
                 ),
               ),
+              // Listen (TTS)
+              ValueListenableBuilder<String?>(
+                valueListenable: TtsService().currentlySpeakingId,
+                builder: (context, speakingId, _) {
+                  final isSpeaking = speakingId == item.id;
+                  return GestureDetector(
+                    onTap: () {
+                      String? englishFallback;
+                      if (widget.langCode == 'lus') {
+                        englishFallback = item.taggedVerse?.textFor('eng') ??
+                            item.quote?.quote;
+                      }
+                      TtsService().speak(
+                        id: item.id,
+                        text: item.mainText,
+                        langCode: widget.langCode,
+                        englishFallbackText: englishFallback,
+                        onNotice: (notice) {
+                          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                            SnackBar(
+                              content: Text(notice),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Icon(
+                        isSpeaking
+                            ? Icons.volume_up_rounded
+                            : Icons.volume_mute_outlined,
+                        size: 20,
+                        color: isSpeaking ? palette.accent : palette.secondaryText,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Research (if verse)
+              if (item.isVerse)
+                GestureDetector(
+                  onTap: () {
+                    BibleResearchModal.show(
+                      context,
+                      item: item,
+                      palette: palette,
+                      langCode: widget.langCode,
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                    child: Icon(
+                      Icons.auto_stories_outlined,
+                      size: 20,
+                      color: palette.secondaryText,
+                    ),
+                  ),
+                ),
+              // Aesthetic Share
+              GestureDetector(
+                onTap: () {
+                  AestheticShareModal.show(
+                    context,
+                    item: item,
+                    palette: palette,
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: Icon(
+                    Icons.share_outlined,
+                    size: 20,
+                    color: palette.secondaryText,
+                  ),
+                ),
+              ),
               // Bookmark
               GestureDetector(
                 onTap: () => widget.onBookmarkToggle?.call(item.id),
-                child: Icon(
-                  isBookmarked
-                      ? Icons.bookmark
-                      : Icons.bookmark_border_rounded,
-                  size: 20,
-                  color: isBookmarked
-                      ? palette.accent
-                      : palette.secondaryText,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: Icon(
+                    isBookmarked
+                        ? Icons.bookmark
+                        : Icons.bookmark_border_rounded,
+                    size: 20,
+                    color: isBookmarked
+                        ? palette.accent
+                        : palette.secondaryText,
+                  ),
                 ),
               ),
             ],

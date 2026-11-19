@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/inshorts_feed_item.dart';
 import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
-import 'shareable_card.dart';
+import 'aesthetic_share_modal.dart';
 
 /// An Inshorts-style split stage card blending Scripture passages and inspirational quotes.
 ///
@@ -349,10 +349,24 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
+                      String? englishFallback;
+                      if (widget.langCode == 'lus') {
+                        englishFallback = item.taggedVerse?.textFor('eng') ??
+                            item.quote?.quote;
+                      }
                       TtsService().speak(
                         id: item.id,
                         text: item.mainText,
                         langCode: widget.langCode,
+                        englishFallbackText: englishFallback,
+                        onNotice: (notice) {
+                          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                            SnackBar(
+                              content: Text(notice),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
                       );
                     },
                     borderRadius: BorderRadius.circular(16.0),
@@ -436,7 +450,7 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                   color: palette.cardBorder.withValues(alpha: 0.6),
                 ),
 
-                // Share button (Image export + share)
+                // Share button (Aesthetic Card Share Modal)
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -444,10 +458,10 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                       if (widget.onShare != null) {
                         widget.onShare!();
                       }
-                      await ShareableCard.shareItemAsImage(
-                        context: context,
-                        boundaryKey: _cardBoundaryKey,
+                      await AestheticShareModal.show(
+                        context,
                         item: item,
+                        palette: palette,
                       );
                     },
                     borderRadius: BorderRadius.circular(16.0),

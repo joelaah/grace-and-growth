@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../models/inshorts_feed_item.dart';
 import '../services/mystery_box_engine.dart';
 import '../theme/mood_stage_theme.dart';
+import 'bible_research_modal.dart';
 import 'inshorts_stage_card.dart';
 
 /// A calm, contemplative modal sheet representing the "Mysterious Personal Message Box".
@@ -381,6 +382,14 @@ class _MysteryBoxModalState extends State<MysteryBoxModal>
                 onShare: () {
                   widget.onShare?.call(item);
                 },
+                onResearch: item.isVerse
+                    ? () => BibleResearchModal.show(
+                          context,
+                          item: item,
+                          palette: palette,
+                          langCode: widget.langCode,
+                        )
+                    : null,
               ),
             ),
 

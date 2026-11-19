@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/inshorts_feed_item.dart';
 import '../services/journal_storage.dart';
 import '../theme/mood_stage_theme.dart';
+import '../widgets/bible_research_modal.dart';
 
 /// The "Journal" tab screen showing saved/bookmarked cards with reflection notes.
 ///
@@ -442,6 +443,33 @@ class _JournalScreenState extends State<JournalScreen> {
                       ),
                     ],
                   ),
+                  if (item.isVerse) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          BibleResearchModal.show(
+                            context,
+                            item: item,
+                            palette: palette,
+                          );
+                        },
+                        icon: const Icon(Icons.auto_stories_rounded, size: 16),
+                        label: const Text('Bible Research & Study'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: palette.primaryText,
+                          side: BorderSide(
+                            color: palette.cardBorder.withValues(alpha: 0.6),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,

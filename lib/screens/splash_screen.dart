@@ -49,13 +49,50 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _navigateNext() async {
     if (!mounted) return;
 
+    final uri = Uri.base;
+    final queryParams = Map<String, String>.from(uri.queryParameters);
+    if (uri.hasFragment && uri.fragment.contains('?')) {
+      final fragmentQuery =
+          uri.fragment.substring(uri.fragment.indexOf('?') + 1);
+      final parsedFragmentParams = Uri.splitQueryString(fragmentQuery);
+      queryParams.addAll(parsedFragmentParams);
+    }
+
+    final rawVerse = queryParams['verse'];
+    final langParam = queryParams['lang'];
+    final stageParam = queryParams['stage'];
+
+    final cleanVerseId = rawVerse != null && rawVerse.trim().isNotEmpty
+        ? rawVerse.trim().replaceFirst(RegExp(r'^verse_'), '')
+        : null;
+
+    MoodStage? stageOverride;
+    if (stageParam != null) {
+      for (final s in MoodStage.values) {
+        if (s.name.toLowerCase() == stageParam.toLowerCase()) {
+          stageOverride = s;
+          break;
+        }
+      }
+    }
+
     final prefs = await SharedPreferences.getInstance();
-    final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+    final hasSharedVerse = cleanVerseId != null && cleanVerseId.isNotEmpty;
+    if (hasSharedVerse) {
+      await prefs.setBool('onboarding_complete', true);
+    }
+
+    final onboardingComplete =
+        hasSharedVerse || (prefs.getBool('onboarding_complete') ?? false);
 
     if (!mounted) return;
 
     final destination = onboardingComplete
-        ? const HomeStageScreen()
+        ? HomeStageScreen(
+            targetVerseId: cleanVerseId,
+            initialLanguage: langParam,
+            initialStage: stageOverride ?? MoodStage.gloomy,
+          )
         : const OnboardingScreen();
 
     Navigator.of(context).pushReplacement(

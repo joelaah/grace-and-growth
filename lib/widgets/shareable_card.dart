@@ -54,39 +54,45 @@ class ShareableCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                decoration: BoxDecoration(
-                  color: palette.accent.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(16.0),
-                  border: Border.all(
-                    color: palette.accent.withValues(alpha: 0.45),
-                    width: 0.8,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      item.isVerse
-                          ? Icons.auto_stories_outlined
-                          : Icons.format_quote_rounded,
-                      size: 14.0,
-                      color: palette.accent,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                  decoration: BoxDecoration(
+                    color: palette.accent.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(16.0),
+                    border: Border.all(
+                      color: palette.accent.withValues(alpha: 0.45),
+                      width: 0.8,
                     ),
-                    const SizedBox(width: 5.0),
-                    Text(
-                      item.sourceBadge,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        item.isVerse
+                            ? Icons.auto_stories_outlined
+                            : Icons.format_quote_rounded,
+                        size: 14.0,
                         color: palette.accent,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 5.0),
+                      Flexible(
+                        child: Text(
+                          item.sourceBadge,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                            color: palette.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(width: 8.0),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -184,12 +190,15 @@ class ShareableCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4.0),
-              Text(
-                '• Spreading the Gospel',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w400,
-                  color: palette.secondaryText.withValues(alpha: 0.75),
+              Flexible(
+                child: Text(
+                  '• Spreading the Gospel',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w400,
+                    color: palette.secondaryText.withValues(alpha: 0.75),
+                  ),
                 ),
               ),
             ],
@@ -215,9 +224,12 @@ class ShareableCard extends StatelessWidget {
           '“${item.mainText}”\n— ${item.attribution}\n\n🕊️ Spreading the Gospel • Grace & Growth Sanctuary';
 
       if (pngBytes != null && pngBytes.isNotEmpty) {
+        final verseId = item.taggedVerse?.id ??
+            (item.id.startsWith('verse_') ? item.id.substring(6) : item.id);
+        final filename = 'grace_and_growth_$verseId.png';
         if (!kIsWeb) {
           final tempDir = await getTemporaryDirectory();
-          final file = File('${tempDir.path}/grace_and_growth_${item.id}.png');
+          final file = File('${tempDir.path}/$filename');
           await file.writeAsBytes(pngBytes);
 
           await Share.shareXFiles(
@@ -229,7 +241,7 @@ class ShareableCard extends StatelessWidget {
           // On Web, try sharing XFile from bytes
           try {
             await Share.shareXFiles(
-              [XFile.fromData(pngBytes, mimeType: 'image/png', name: 'grace_and_growth.png')],
+              [XFile.fromData(pngBytes, mimeType: 'image/png', name: filename)],
               text: shareText,
             );
             return true;

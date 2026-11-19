@@ -86,10 +86,14 @@ void main() {
       expect(find.text('Quotes'), findsOneWidget);
 
       // Language selector
-      expect(find.text('eng'), findsOneWidget);
-      expect(find.text('lus'), findsOneWidget);
-      expect(find.text('hin'), findsOneWidget);
-      expect(find.text('spa'), findsOneWidget);
+      expect(find.byKey(const ValueKey('lang_eng')), findsOneWidget);
+      expect(find.byKey(const ValueKey('lang_lus')), findsOneWidget);
+      expect(find.byKey(const ValueKey('lang_hin')), findsOneWidget);
+      expect(find.byKey(const ValueKey('lang_spa')), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
+      expect(find.text('Mizo'), findsOneWidget);
+      expect(find.text('हिंदी'), findsOneWidget);
+      expect(find.text('Español'), findsOneWidget);
     });
 
     testWidgets('Horizontal chip selector displays "How is your heart today?" and 4 MoodStage values', (tester) async {
@@ -165,22 +169,23 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: HomeStageScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text('eng'), findsOneWidget);
+      expect(find.byKey(const ValueKey('lang_eng')), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
 
       // Tap Mizo/Lushai
-      await tester.tap(find.text('lus'));
+      await tester.tap(find.byKey(const ValueKey('lang_lus')));
       await tester.pumpAndSettle();
 
       expect(find.text('Ngaihtuah Zui Atan'), findsWidgets);
 
       // Tap Hindi
-      await tester.tap(find.text('hin'));
+      await tester.tap(find.byKey(const ValueKey('lang_hin')));
       await tester.pumpAndSettle();
 
       expect(find.text('एक शांत विचार'), findsWidgets);
 
       // Tap Spanish
-      await tester.tap(find.text('spa'));
+      await tester.tap(find.byKey(const ValueKey('lang_spa')));
       await tester.pumpAndSettle();
 
       expect(find.text('Un Pensamiento Suave'), findsWidgets);

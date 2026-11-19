@@ -36,6 +36,7 @@ class GraceAndGrowthApp extends StatelessWidget {
         ),
         dividerColor: StagePalette.bibleLight.cardBorder,
         fontFamily: 'serif',
+        fontFamilyFallback: const ['Noto Sans Devanagari'],
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
@@ -51,6 +52,7 @@ class GraceAndGrowthApp extends StatelessWidget {
         ),
         dividerColor: StagePalette.bibleDark.cardBorder,
         fontFamily: 'serif',
+        fontFamilyFallback: const ['Noto Sans Devanagari'],
       ),
       home: const SplashScreen(),
     );
