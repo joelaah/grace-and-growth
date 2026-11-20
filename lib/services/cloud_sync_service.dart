@@ -13,10 +13,18 @@ class CloudSyncService {
   final AuthService _auth = AuthService();
   final JournalStorage _storage = JournalStorage();
 
-  SupabaseClient get _client => Supabase.instance.client;
+  SupabaseClient? get _client {
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Pushes local bookmarks, journal notes, and mood entries to Supabase.
   Future<void> pushToCloud() async {
+    final client = _client;
+    if (client == null) return;
     final userId = _auth.currentUserId;
     if (userId == null) return;
 
@@ -30,10 +38,10 @@ class CloudSyncService {
           'updated_at': DateTime.now().toIso8601String(),
         }).toList();
 
-        await _client.from('user_bookmarks').upsert(
+        await client.from('user_bookmarks').upsert(
           bookmarkRows,
           onConflict: 'user_id,card_id',
-        );
+        ).timeout(const Duration(seconds: 5));
       }
 
       // 2. Journal Entries
@@ -47,10 +55,10 @@ class CloudSyncService {
           'updated_at': entry['updatedAt'] ?? DateTime.now().toIso8601String(),
         }).toList();
 
-        await _client.from('user_journal').upsert(
+        await client.from('user_journal').upsert(
           journalRows,
           onConflict: 'user_id,card_id',
-        );
+        ).timeout(const Duration(seconds: 5));
       }
 
       // 3. Mood History
@@ -63,10 +71,10 @@ class CloudSyncService {
           'updated_at': DateTime.now().toIso8601String(),
         }).toList();
 
-        await _client.from('user_mood_history').upsert(
+        await client.from('user_mood_history').upsert(
           moodRows,
           onConflict: 'user_id,date',
-        );
+        ).timeout(const Duration(seconds: 5));
       }
     } catch (e) {
       debugPrint('Cloud sync push warning (tables may be pending setup): $e');
@@ -75,15 +83,18 @@ class CloudSyncService {
 
   /// Pulls remote data from Supabase and merges into local storage.
   Future<void> pullFromCloud() async {
+    final client = _client;
+    if (client == null) return;
     final userId = _auth.currentUserId;
     if (userId == null) return;
 
     try {
       // 1. Pull Bookmarks
-      final List<dynamic> bookmarks = await _client
+      final List<dynamic> bookmarks = await client
           .from('user_bookmarks')
           .select('card_id')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .timeout(const Duration(seconds: 5));
 
       for (final row in bookmarks) {
         final cardId = row['card_id'] as String?;
@@ -93,10 +104,11 @@ class CloudSyncService {
       }
 
       // 2. Pull Journal
-      final List<dynamic> journals = await _client
+      final List<dynamic> journals = await client
           .from('user_journal')
           .select('card_id, note')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .timeout(const Duration(seconds: 5));
 
       for (final row in journals) {
         final cardId = row['card_id'] as String?;
@@ -107,10 +119,11 @@ class CloudSyncService {
       }
 
       // 3. Pull Mood History
-      final List<dynamic> moods = await _client
+      final List<dynamic> moods = await client
           .from('user_mood_history')
           .select('date, mood_stage')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .timeout(const Duration(seconds: 5));
 
       for (final row in moods) {
         final moodIndex = row['mood_stage'] as int?;

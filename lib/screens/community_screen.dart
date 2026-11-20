@@ -48,7 +48,13 @@ class CommunityScreen extends StatefulWidget {
 }
 
 class _CommunityScreenState extends State<CommunityScreen> {
-  final SupabaseClient _client = Supabase.instance.client;
+  SupabaseClient? get _client {
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
   List<Map<String, dynamic>> _reflections = [];
   bool _isLoading = true;
 
@@ -59,12 +65,24 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   Future<void> _loadCommunityReflections() async {
+    final client = _client;
+    if (client == null) {
+      if (mounted) {
+        setState(() {
+          _reflections = [];
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     try {
-      final List<dynamic> data = await _client
+      final List<dynamic> data = await client
           .from('community_reflections')
           .select()
           .order('created_at', ascending: false)
-          .limit(30);
+          .limit(30)
+          .timeout(const Duration(seconds: 4));
 
       if (mounted) {
         setState(() {
@@ -73,7 +91,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
         });
       }
     } catch (_) {
-      // Graceful fallback when table hasn't been created yet
+      // Graceful fallback when table hasn't been created yet or offline
       if (mounted) {
         setState(() {
           _reflections = [];

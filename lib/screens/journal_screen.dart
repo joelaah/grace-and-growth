@@ -477,7 +477,17 @@ class _JournalScreenState extends State<JournalScreen> {
                       onPressed: () async {
                         final text = noteController.text.trim();
                         try {
-                          await Supabase.instance.client
+                          final client = () {
+                            try {
+                              return Supabase.instance.client;
+                            } catch (_) {
+                              return null;
+                            }
+                          }();
+                          if (client == null) {
+                            throw Exception('Cloud sync is uninitialized');
+                          }
+                          await client
                               .from('community_reflections')
                               .insert({
                             'verse_text': item.mainText,
@@ -486,7 +496,8 @@ class _JournalScreenState extends State<JournalScreen> {
                                 : item.reflectionContent,
                             'mood_stage': item.stage.index,
                             'created_at': DateTime.now().toIso8601String(),
-                          });
+                          })
+                              .timeout(const Duration(seconds: 4));
                           if (context.mounted) {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(

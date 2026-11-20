@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/supabase_config.dart';
 import '../services/auth_service.dart';
 import '../services/cloud_sync_service.dart';
 import '../theme/mood_stage_theme.dart';
@@ -49,6 +50,11 @@ class _AuthModalState extends State<AuthModal> {
 
     if (email.isEmpty || password.isEmpty) {
       setState(() => _errorMessage = 'Please enter both email and password.');
+      return;
+    }
+
+    if (!SupabaseConfig.isConfigured || !_auth.isAvailable) {
+      setState(() => _errorMessage = 'Cloud sync is currently offline. Verses and notes are stored locally.');
       return;
     }
 
@@ -201,6 +207,40 @@ class _AuthModalState extends State<AuthModal> {
               color: palette.secondaryText,
             ),
           ),
+
+          if (!SupabaseConfig.isConfigured || !_auth.isAvailable) ...[
+            const SizedBox(height: 14.0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+              decoration: BoxDecoration(
+                color: palette.bgTop.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14.0),
+                border: Border.all(
+                  color: palette.cardBorder.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.cloud_off_rounded,
+                    size: 18.0,
+                    color: palette.secondaryText,
+                  ),
+                  const SizedBox(width: 10.0),
+                  Expanded(
+                    child: Text(
+                      'Running in local sanctuary mode. Verses, notes, and reflections are preserved offline on this device.',
+                      style: TextStyle(
+                        fontSize: 12.0,
+                        height: 1.35,
+                        color: palette.secondaryText,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: 20.0),
 

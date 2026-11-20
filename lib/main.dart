@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config/supabase_config.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'theme/mood_stage_theme.dart';
@@ -7,10 +8,20 @@ import 'theme/mood_stage_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService().initialize();
-  await Supabase.initialize(
-    url: 'https://cdwkuzqsjyuzonufixji.supabase.co',
-    publishableKey: 'sb_publishable_IqnKDG9zDsuGoYiw4bW4vw_sf2Pod-F',
-  );
+
+  if (SupabaseConfig.isConfigured) {
+    try {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        publishableKey: SupabaseConfig.publishableKey,
+      );
+    } catch (e) {
+      debugPrint('Warning: Supabase initialization failed ($e). Operating in offline mode.');
+    }
+  } else {
+    debugPrint('Supabase is not configured. Operating in offline mode.');
+  }
+
   runApp(const GraceAndGrowthApp());
 }
 

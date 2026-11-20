@@ -108,7 +108,8 @@ class MoodMatchingEngine {
 
     final response = await client
         .from('verses')
-        .select('*, verse_translations(*)');
+        .select('*, verse_translations(*)')
+        .timeout(const Duration(seconds: 4));
 
     final list = response as List<dynamic>;
     final verses = <TaggedVerse>[];

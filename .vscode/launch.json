@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Bible Glory (with .env)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--dart-define-from-file=.env"]
+    },
+    {
+      "name": "Bible Glory (Offline Sanctuary)",
+      "request": "launch",
+      "type": "dart"
+    }
+  ]
+}
