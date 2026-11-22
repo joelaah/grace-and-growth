@@ -273,7 +273,7 @@ void main() {
       expect(find.byType(InshortsStageCard), findsWidgets);
     });
 
-    testWidgets('Renders centered with max width 600dp on 1024x768 tablet viewport', (tester) async {
+    testWidgets('Renders panoramic immersion on 1024x768 tablet viewport', (tester) async {
       tester.view.physicalSize = const Size(1024, 768);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -286,13 +286,13 @@ void main() {
 
       expect(tester.takeException(), isNull);
       final cardWidget = tester.getRect(find.byType(InshortsStageCard).first);
-      // InshortsStageCard is centered with max width 600dp rather than stretching across full screen
-      expect(cardWidget.width, equals(600.0));
-      expect(cardWidget.left, equals((1024.0 - 600.0) / 2));
-      expect(cardWidget.right, equals(1024.0 - (1024.0 - 600.0) / 2));
+      // InshortsStageCard commands full width up to maxWidth on 1024
+      expect(cardWidget.width, equals(1024.0));
+      expect(cardWidget.left, equals(0.0));
+      expect(cardWidget.right, equals(1024.0));
     });
 
-    testWidgets('Renders centered with max width 600dp on 1920x1080 desktop viewport', (tester) async {
+    testWidgets('Renders centered with max width 1240dp on 1920x1080 desktop viewport', (tester) async {
       tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -305,10 +305,10 @@ void main() {
 
       expect(tester.takeException(), isNull);
       final cardWidget = tester.getRect(find.byType(InshortsStageCard).first);
-      // InshortsStageCard is centered with max width 600dp rather than stretching across 1920px
-      expect(cardWidget.width, equals(600.0));
-      expect(cardWidget.left, equals((1920.0 - 600.0) / 2));
-      expect(cardWidget.right, equals(1920.0 - (1920.0 - 600.0) / 2));
+      // InshortsStageCard is centered with max width 1240dp on 1920px widescreen
+      expect(cardWidget.width, equals(1240.0));
+      expect(cardWidget.left, equals((1920.0 - 1240.0) / 2));
+      expect(cardWidget.right, equals(1920.0 - (1920.0 - 1240.0) / 2));
     });
 
     testWidgets('Renders without overflow under 1.5x accessibility text scaling', (tester) async {
@@ -664,6 +664,81 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(state.pageController.page?.round(), greaterThan(0));
+    });
+
+    testWidgets('Desktop shortcuts: [S] toggles bookmark, [Space] opens Share, [R] opens Research', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Press [S] to bookmark
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyS);
+      await tester.pumpAndSettle();
+      expect(find.text('Saved to your quiet sanctuary'), findsOneWidget);
+
+      // Press [Space] to open AestheticShareModal
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsOneWidget);
+      expect(find.text('Aesthetic Card Sharing'), findsOneWidget);
+
+      // Close the share modal
+      await tester.tap(find.byIcon(Icons.close_rounded).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+
+      // Press [R] to open BibleResearchModal on verse
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsOneWidget);
+      expect(find.text('Bible Research & Study'), findsOneWidget);
+
+      // Close the research modal
+      await tester.tap(find.byIcon(Icons.close_rounded).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+    });
+
+    testWidgets('Desktop navigation chevrons appear on widescreen (>= 1024) and navigate smoothly', (tester) async {
+      final screenKey = GlobalKey<HomeStageScreenState>();
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(MaterialApp(home: HomeStageScreen(key: screenKey)));
+      await tester.pumpAndSettle();
+
+      final state = screenKey.currentState!;
+      expect(state.pageController.page?.round(), equals(0));
+
+      // Assert presence of floating desktop nav chevrons
+      final nextChevron = find.byIcon(Icons.keyboard_arrow_down_rounded);
+      final prevChevron = find.byIcon(Icons.keyboard_arrow_up_rounded);
+      expect(nextChevron, findsOneWidget);
+      expect(prevChevron, findsOneWidget);
+
+      // Tap Next chevron
+      await tester.tap(nextChevron);
+      await tester.pumpAndSettle();
+      expect(state.pageController.page?.round(), equals(1));
+
+      // Tap Previous chevron
+      await tester.tap(prevChevron);
+      await tester.pumpAndSettle();
+      expect(state.pageController.page?.round(), equals(0));
     });
   });
 }

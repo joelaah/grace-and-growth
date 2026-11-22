@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/inshorts_feed_item.dart';
@@ -15,6 +16,7 @@ class JournalScreen extends StatefulWidget {
   final Set<String> bookmarkedIds;
   final ValueChanged<String>? onBookmarkToggle;
   final JournalStorage? journalStorage;
+  final bool? isWideScreen;
 
   const JournalScreen({
     super.key,
@@ -23,6 +25,7 @@ class JournalScreen extends StatefulWidget {
     this.bookmarkedIds = const {},
     this.onBookmarkToggle,
     this.journalStorage,
+    this.isWideScreen,
   });
 
   @override
@@ -63,38 +66,88 @@ class _JournalScreenState extends State<JournalScreen> {
   Widget build(BuildContext context) {
     final palette = widget.palette;
     final savedItems = _savedItems;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = widget.isWideScreen ?? (screenWidth >= 1024);
 
     if (savedItems.isEmpty) {
       return Center(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 1200 : 700),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.spa_outlined,
+                    size: 48,
+                    color: palette.secondaryText.withValues(alpha: 0.4),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Your journal is empty',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: palette.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Save verses and quotes from the feed to begin.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: palette.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (isWide) {
+      // Responsive 2-column masonry grid for wide viewports
+      final col1 = <Widget>[];
+      final col2 = <Widget>[];
+
+      for (var i = 0; i < savedItems.length; i++) {
+        final item = savedItems[i];
+        final note = _notes[item.id];
+        final card = _buildJournalCard(palette, item, note);
+        if (i % 2 == 0) {
+          col1.add(card);
+        } else {
+          col2.add(card);
+        }
+      }
+
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.spa_outlined,
-                  size: 48,
-                  color: palette.secondaryText.withValues(alpha: 0.4),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Your journal is empty',
-                  style: TextStyle(
-                    fontFamily: 'serif',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: palette.primaryText,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: col1,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Save verses and quotes from the feed to begin.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: palette.secondaryText,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: col2,
                   ),
                 ),
               ],
@@ -104,15 +157,20 @@ class _JournalScreenState extends State<JournalScreen> {
       );
     }
 
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      itemCount: savedItems.length,
-      itemBuilder: (context, index) {
-        final item = savedItems[index];
-        final note = _notes[item.id];
-        return _buildJournalCard(palette, item, note);
-      },
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 700),
+        child: ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          itemCount: savedItems.length,
+          itemBuilder: (context, index) {
+            final item = savedItems[index];
+            final note = _notes[item.id];
+            return _buildJournalCard(palette, item, note);
+          },
+        ),
+      ),
     );
   }
 
@@ -279,55 +337,122 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   void _showDetailSheet(InshortsFeedItem item, String? existingNote) {
-    final palette = widget.palette;
-    final stagePalette = item.stage.palette;
     final noteController = TextEditingController(text: existingNote ?? '');
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 900;
+
+    if (isDesktop) {
+      showDialog(
+        context: context,
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        builder: (dialogContext) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 580, maxHeight: 680),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28.0),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                child: _buildDetailContent(dialogContext, item, noteController, isDesktop: true),
+              ),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
-          ),
-          decoration: BoxDecoration(
-            color: palette.cardSurface,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(
-              top: BorderSide(
-                color: palette.cardBorder.withValues(alpha: 0.5),
+      builder: (sheetContext) => _buildDetailContent(sheetContext, item, noteController, isDesktop: false),
+    );
+  }
+
+  Widget _buildDetailContent(
+    BuildContext context,
+    InshortsFeedItem item,
+    TextEditingController noteController, {
+    required bool isDesktop,
+  }) {
+    final palette = widget.palette;
+    final stagePalette = item.stage.palette;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: isDesktop ? 680 : MediaQuery.of(context).size.height * 0.85,
+      ),
+      decoration: BoxDecoration(
+        color: isDesktop
+            ? palette.cardSurface.withValues(alpha: palette.isDarkPalette ? 0.82 : 0.90)
+            : palette.cardSurface,
+        borderRadius: isDesktop
+            ? BorderRadius.circular(28)
+            : const BorderRadius.vertical(top: Radius.circular(24)),
+        border: isDesktop
+            ? Border.all(
+                color: palette.cardBorder.withValues(alpha: 0.8),
+                width: 1.2,
+              )
+            : Border(
+                top: BorderSide(
+                  color: palette.cardBorder.withValues(alpha: 0.5),
+                ),
               ),
-            ),
-          ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              24,
-              16,
-              24,
-              MediaQuery.of(context).viewInsets.bottom + 24,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color:
-                            palette.secondaryText.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          isDesktop ? 20 : 16,
+          24,
+          isDesktop ? 24 : MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isDesktop) ...[
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color:
+                          palette.secondaryText.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  // Source badge
+                ),
+                const SizedBox(height: 20),
+              ] else ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Journal Reflection',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: palette.primaryText,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, size: 20, color: palette.secondaryText),
+                      onPressed: () => Navigator.of(context).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+              // Source badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 4),
@@ -576,7 +701,5 @@ class _JournalScreenState extends State<JournalScreen> {
             ),
           ),
         );
-      },
-    );
   }
 }

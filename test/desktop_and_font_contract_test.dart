@@ -1,12 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bible_glory/models/inshorts_feed_item.dart';
 import 'package:bible_glory/models/tagged_verse.dart';
 import 'package:bible_glory/screens/home_stage_screen.dart';
 import 'package:bible_glory/screens/onboarding_screen.dart';
+import 'package:bible_glory/screens/today_screen.dart';
+import 'package:bible_glory/screens/journal_screen.dart';
+import 'package:bible_glory/screens/feelings_screen.dart';
 import 'package:bible_glory/theme/mood_stage_theme.dart';
 import 'package:bible_glory/widgets/inshorts_stage_card.dart';
+import 'package:bible_glory/widgets/bible_research_modal.dart';
 
 void main() {
   group('Web & Font Contracts', () {
@@ -92,20 +97,20 @@ void main() {
 
       expect(tester.takeException(), isNull);
 
-      // 1. Inshorts card centered at maxWidth: 600
+      // 1. Inshorts card centered at maxWidth: 1240
       final cardRect = tester.getRect(find.byType(InshortsStageCard).first);
-      expect(cardRect.width, equals(600.0));
-      expect(cardRect.left, equals((1920.0 - 600.0) / 2));
+      expect(cardRect.width, equals(1240.0));
+      expect(cardRect.left, equals((1920.0 - 1240.0) / 2));
 
-      // 2. Header and Mood constrained within maxWidth 820
+      // 2. Header and Mood constrained within maxWidth 1240
       final headerFinder = find.text('Grace & Growth');
       expect(headerFinder, findsOneWidget);
 
-      // 3. Floating glass bottom nav constrained within maxWidth 580
+      // 3. Floating glass bottom nav constrained within maxWidth 1240
       final bottomNavFinder = find.byType(BottomNavigationBar);
       expect(bottomNavFinder, findsOneWidget);
       final navRect = tester.getRect(bottomNavFinder);
-      expect(navRect.width, lessThanOrEqualTo(580.0));
+      expect(navRect.width, lessThanOrEqualTo(1240.0));
     });
 
     testWidgets('OnboardingScreen centers content at maxWidth: 540 with frosted glass elements', (tester) async {
@@ -134,6 +139,137 @@ void main() {
         matching: find.byType(BackdropFilter),
       );
       expect(backdropFilters, findsWidgets);
+    });
+
+    testWidgets('Cross-tab responsive layout harmony on 1920x1080 widescreen', (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      // 1. TodayScreen on wide screen has 2-column layout and maxWidth: 1200
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: TodayScreen(
+            palette: StagePalette.bibleDark,
+            verses: [],
+            quotes: [],
+            isWideScreen: true,
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final todayBox = tester.widget<ConstrainedBox>(find.descendant(
+        of: find.byType(TodayScreen),
+        matching: find.byWidgetPredicate((w) => w is ConstrainedBox && w.constraints.maxWidth == 1200.0),
+      ));
+      expect(todayBox.constraints.maxWidth, equals(1200.0));
+
+      // 2. JournalScreen on wide screen has 2-column masonry and maxWidth: 1200
+      final sampleVerse = TaggedVerse(
+        id: 'JHN.3.16',
+        book: 'JHN',
+        chapter: 3,
+        verse: 16,
+        primaryStage: MoodStage.bright,
+        moodTags: const ['love'],
+        textsByLang: const {'eng': 'For God so loved the world.'},
+        reflectionsByLang: const {'eng': 'Embrace divine grace.'},
+      );
+      final sampleItem = InshortsFeedItem.fromVerse(sampleVerse, langCode: 'eng');
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: JournalScreen(
+            palette: StagePalette.bibleDark,
+            allFeedItems: [sampleItem],
+            bookmarkedIds: {sampleItem.id},
+            isWideScreen: true,
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      final journalBox = tester.widget<ConstrainedBox>(find.descendant(
+        of: find.byType(JournalScreen),
+        matching: find.byWidgetPredicate((w) => w is ConstrainedBox && w.constraints.maxWidth == 1200.0),
+      ));
+      expect(journalBox.constraints.maxWidth, equals(1200.0));
+
+      // 3. FeelingsScreen on wide screen has 2-column layout and maxWidth: 1200
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: FeelingsScreen(
+            palette: StagePalette.bibleDark,
+            isWideScreen: true,
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final feelingsBox = tester.widget<ConstrainedBox>(find.descendant(
+        of: find.byType(FeelingsScreen),
+        matching: find.byWidgetPredicate((w) => w is ConstrainedBox && w.constraints.maxWidth == 1200.0),
+      ));
+      expect(feelingsBox.constraints.maxWidth, equals(1200.0));
+    });
+
+    testWidgets('Modals open as centered floating dialogs at screen width >= 900', (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final sampleVerse = TaggedVerse(
+        id: 'PSA.23.1',
+        book: 'PSA',
+        chapter: 23,
+        verse: 1,
+        primaryStage: MoodStage.humble,
+        moodTags: const ['peace'],
+        textsByLang: const {'eng': 'The Lord is my shepherd.'},
+        reflectionsByLang: const {'eng': 'Rest in divine provision.'},
+      );
+      final sampleItem = InshortsFeedItem.fromVerse(sampleVerse, langCode: 'eng');
+
+      // Test BibleResearchModal.show on desktop
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (ctx) => Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () => BibleResearchModal.show(
+                  ctx,
+                  item: sampleItem,
+                  palette: StagePalette.bibleDark,
+                ),
+                child: const Text('Open Research'),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Research'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Dialog), findsOneWidget);
+      final dialogBox = tester.widget<ConstrainedBox>(find.descendant(
+        of: find.byType(Dialog),
+        matching: find.byWidgetPredicate((w) => w is ConstrainedBox && w.constraints.maxWidth == 580.0),
+      ));
+      expect(dialogBox.constraints.maxWidth, equals(580.0));
+      expect(dialogBox.constraints.maxHeight, equals(680.0));
     });
   });
 }

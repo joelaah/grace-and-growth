@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -39,7 +40,7 @@ class MysteryBoxModal extends StatefulWidget {
     this.isItemBookmarked,
   });
 
-  /// Displays the [MysteryBoxModal] as a calm modal bottom sheet.
+  /// Displays the [MysteryBoxModal] as a calm modal bottom sheet or floating desktop dialog.
   static Future<void> show(
     BuildContext context, {
     required MoodStage activeMood,
@@ -51,6 +52,38 @@ class MysteryBoxModal extends StatefulWidget {
     bool isBookmarked = false,
     bool Function(InshortsFeedItem item)? isItemBookmarked,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth >= 900) {
+      return showDialog(
+        context: context,
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        builder: (dialogContext) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 580, maxHeight: 680),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28.0),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                child: MysteryBoxModal(
+                  activeMood: activeMood,
+                  palette: palette,
+                  langCode: langCode,
+                  mysteryBoxEngine: mysteryBoxEngine,
+                  onBookmarkToggle: onBookmarkToggle,
+                  onShare: onShare,
+                  initialIsBookmarked: isBookmarked,
+                  isItemBookmarked: isItemBookmarked,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -206,14 +239,21 @@ class _MysteryBoxModalState extends State<MysteryBoxModal>
     final palette = widget.palette ?? widget.activeMood.palette;
     final mediaQuery = MediaQuery.of(context);
     final screenHeight = mediaQuery.size.height;
+    final screenWidth = mediaQuery.size.width;
+    final isFloatingDialog = screenWidth >= 900;
     final isShort = screenHeight < 680;
     final modalHeight = math.min(screenHeight * (isShort ? 0.94 : 0.88), 760.0);
+    final borderRadius = isFloatingDialog
+        ? BorderRadius.circular(28.0)
+        : const BorderRadius.vertical(top: Radius.circular(28.0));
 
     return Container(
-      height: modalHeight,
+      height: isFloatingDialog ? 680.0 : modalHeight,
       decoration: BoxDecoration(
-        color: palette.bgTop,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
+        color: isFloatingDialog
+            ? palette.bgTop.withValues(alpha: palette.isDarkPalette ? 0.82 : 0.90)
+            : palette.bgTop,
+        borderRadius: borderRadius,
         border: Border.all(
           color: palette.cardBorder.withValues(alpha: 0.75),
           width: 1.0,
@@ -227,7 +267,7 @@ class _MysteryBoxModalState extends State<MysteryBoxModal>
         ],
       ),
       child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
+        borderRadius: borderRadius,
         child: Column(
           children: [
             // Top Drag Handle & Close Row
@@ -237,16 +277,18 @@ class _MysteryBoxModalState extends State<MysteryBoxModal>
                 children: [
                   const SizedBox(width: 32.0),
                   Expanded(
-                    child: Center(
-                      child: Container(
-                        width: 40.0,
-                        height: 4.5,
-                        decoration: BoxDecoration(
-                          color: palette.secondaryText.withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(3.0),
-                        ),
-                      ),
-                    ),
+                    child: isFloatingDialog
+                        ? const SizedBox.shrink()
+                        : Center(
+                            child: Container(
+                              width: 40.0,
+                              height: 4.5,
+                              decoration: BoxDecoration(
+                                color: palette.secondaryText.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(3.0),
+                              ),
+                            ),
+                          ),
                   ),
                   IconButton(
                     icon: Icon(

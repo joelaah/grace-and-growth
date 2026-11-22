@@ -14,6 +14,7 @@ import '../services/quote_api_service.dart';
 import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
 import '../utils/parallax_card_effect.dart';
+import '../widgets/aesthetic_share_modal.dart';
 import '../widgets/bible_research_modal.dart';
 import '../widgets/inshorts_stage_card.dart';
 import '../widgets/mystery_box_modal.dart';
@@ -510,7 +511,8 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     final screenWidth = mediaQuery.size.width;
     final isShortScreen = screenHeight < 680 || textScale > 1.25;
     final isVeryShortScreen = screenHeight < 500;
-    final isWideScreen = screenWidth >= 720;
+    final isWideScreen = screenWidth >= 1024;
+    final contentMaxWidth = isWideScreen ? 1240.0 : (screenWidth >= 720 ? 760.0 : 600.0);
 
     final themeData = ThemeData(
       useMaterial3: true,
@@ -618,19 +620,56 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                       onKeyEvent: (node, event) {
                         // Only handle keyboard for Reflect tab (feed)
                         if (_currentNavIndex != 1) return KeyEventResult.ignored;
+                        // Ignore key events when a modal dialog or sheet is open on top
+                        if (ModalRoute.of(context)?.isCurrent != true) return KeyEventResult.ignored;
+
                         if (event is KeyDownEvent || event is KeyRepeatEvent) {
                           if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
-                              event.logicalKey == LogicalKeyboardKey.pageDown ||
-                              (event.logicalKey == LogicalKeyboardKey.space &&
-                                  !HardwareKeyboard.instance.isShiftPressed)) {
+                              event.logicalKey == LogicalKeyboardKey.pageDown) {
                             _animateToRelativePage(1);
                             return KeyEventResult.handled;
                           } else if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
-                              event.logicalKey == LogicalKeyboardKey.pageUp ||
-                              (event.logicalKey == LogicalKeyboardKey.space &&
-                                  HardwareKeyboard.instance.isShiftPressed)) {
+                              event.logicalKey == LogicalKeyboardKey.pageUp) {
                             _animateToRelativePage(-1);
                             return KeyEventResult.handled;
+                          }
+                        }
+                        if (event is KeyDownEvent) {
+                          if (event.logicalKey == LogicalKeyboardKey.keyS && _displayedItems.isNotEmpty) {
+                            final currentIdx = _pageController.page?.round() ?? _pageController.initialPage;
+                            if (currentIdx >= 0 && currentIdx < _displayedItems.length) {
+                              final item = _displayedItems[currentIdx];
+                              final wasSaved = _bookmarkedIds.contains(item.id);
+                              setState(() {
+                                if (wasSaved) {
+                                  _bookmarkedIds.remove(item.id);
+                                } else {
+                                  _bookmarkedIds.add(item.id);
+                                }
+                              });
+                              final message = !wasSaved
+                                  ? 'Saved to your quiet sanctuary'
+                                  : 'Removed from saved moments';
+                              _showGentleNotice(message, palette);
+                              return KeyEventResult.handled;
+                            }
+                          } else if (event.logicalKey == LogicalKeyboardKey.keyR && _displayedItems.isNotEmpty) {
+                            final currentIdx = _pageController.page?.round() ?? _pageController.initialPage;
+                            if (currentIdx >= 0 && currentIdx < _displayedItems.length) {
+                              final item = _displayedItems[currentIdx];
+                              if (item.isVerse) {
+                                _showBibleResearchModal(item, palette);
+                                return KeyEventResult.handled;
+                              }
+                            }
+                          } else if (event.logicalKey == LogicalKeyboardKey.space && _displayedItems.isNotEmpty) {
+                            final currentIdx = _pageController.page?.round() ?? _pageController.initialPage;
+                            if (currentIdx >= 0 && currentIdx < _displayedItems.length) {
+                              final item = _displayedItems[currentIdx];
+                              _showGentleNotice('Copied to share gentle comfort', palette);
+                              AestheticShareModal.show(context, item: item, palette: palette);
+                              return KeyEventResult.handled;
+                            }
                           }
                         }
                         return KeyEventResult.ignored;
@@ -641,7 +680,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                           // Top Bar with App Title, Filter Toggle, and Language Selector (centered sanctuary column)
                           Center(
                             child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 820),
+                              constraints: BoxConstraints(maxWidth: contentMaxWidth),
                               child: Padding(
                                 padding: EdgeInsets.fromLTRB(
                                   horizontalPadding,
@@ -663,7 +702,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                           // "How is your heart today?" mood chips (centered sanctuary column)
                           Center(
                             child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 820),
+                              constraints: BoxConstraints(maxWidth: contentMaxWidth),
                               child: Padding(
                                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                                 child: _buildMoodSection(
@@ -680,7 +719,11 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
                           // Tab content area
                           Expanded(
-                            child: _buildTabContent(palette),
+                            child: _buildTabContent(
+                              palette,
+                              isWideScreen: isWideScreen,
+                              contentMaxWidth: contentMaxWidth,
+                            ),
                           ),
                         ],
                       ),
@@ -695,6 +738,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           palette,
           isShort: isShortScreen,
           isVeryShort: isVeryShortScreen,
+          contentMaxWidth: contentMaxWidth,
         ),
         floatingActionButton: _currentNavIndex == 1
             ? _buildForYouFloatingButton(palette)
@@ -705,7 +749,11 @@ class HomeStageScreenState extends State<HomeStageScreen> {
   }
 
   /// Builds the content for the currently selected tab.
-  Widget _buildTabContent(StagePalette palette) {
+  Widget _buildTabContent(
+    StagePalette palette, {
+    required bool isWideScreen,
+    required double contentMaxWidth,
+  }) {
     switch (_currentNavIndex) {
       case 0:
         return TodayScreen(
@@ -714,6 +762,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           quotes: _allQuotes,
           langCode: _selectedLanguage,
           bookmarkedIds: _bookmarkedIds,
+          isWideScreen: isWideScreen,
           onBookmarkToggle: (id) {
             setState(() {
               if (_bookmarkedIds.contains(id)) {
@@ -730,6 +779,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           allFeedItems: _allFeedItems,
           bookmarkedIds: _bookmarkedIds,
           journalStorage: _journalStorage,
+          isWideScreen: isWideScreen,
           onBookmarkToggle: (id) {
             setState(() {
               _bookmarkedIds.remove(id);
@@ -740,15 +790,24 @@ class HomeStageScreenState extends State<HomeStageScreen> {
         return FeelingsScreen(
           palette: palette,
           journalStorage: _journalStorage,
+          isWideScreen: isWideScreen,
         );
       default:
         // Reflect tab (index 1) — the vertical swipe feed
-        return _buildFeedContent(palette);
+        return _buildFeedContent(
+          palette,
+          isWideScreen: isWideScreen,
+          contentMaxWidth: contentMaxWidth,
+        );
     }
   }
 
   /// The vertical Inshorts-style PageView feed (Reflect tab).
-  Widget _buildFeedContent(StagePalette palette) {
+  Widget _buildFeedContent(
+    StagePalette palette, {
+    required bool isWideScreen,
+    required double contentMaxWidth,
+  }) {
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
@@ -816,7 +875,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                   },
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
+                      constraints: BoxConstraints(maxWidth: contentMaxWidth),
                       child: InshortsStageCard(
                         key: ValueKey('${item.id}_$_selectedLanguage'),
                         item: item,
@@ -860,7 +919,88 @@ class HomeStageScreenState extends State<HomeStageScreen> {
             onPointerSignal: _onPointerSignal,
           ),
         ),
+        if (isWideScreen) ...[
+          // Floating Previous Navigation Button (Left margin)
+          Positioned(
+            left: 24,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _buildDesktopNavChevron(
+                icon: Icons.keyboard_arrow_up_rounded,
+                tooltip: 'Previous moment [Up / PageUp]',
+                onTap: () => _animateToRelativePage(-1),
+                palette: palette,
+              ),
+            ),
+          ),
+
+          // Floating Next Navigation Button (Right margin)
+          Positioned(
+            right: 24,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _buildDesktopNavChevron(
+                icon: Icons.keyboard_arrow_down_rounded,
+                tooltip: 'Next moment [Down / PageDown]',
+                onTap: () => _animateToRelativePage(1),
+                palette: palette,
+              ),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  /// Floating circular frosted glass navigation chevron for desktop widescreen viewports.
+  Widget _buildDesktopNavChevron({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    required StagePalette palette,
+  }) {
+    final isDark = _themeMode == 'dark';
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(28.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28.0),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+              child: Container(
+                width: 48.0,
+                height: 48.0,
+                decoration: BoxDecoration(
+                  color: palette.cardSurface.withValues(alpha: isDark ? 0.78 : 0.90),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: palette.cardBorder.withValues(alpha: 0.65),
+                    width: 1.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 16.0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  size: 26.0,
+                  color: palette.primaryText.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1604,6 +1744,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     StagePalette palette, {
     bool isShort = false,
     bool isVeryShort = false,
+    double contentMaxWidth = 580.0,
   }) {
     final isDark = _themeMode == 'dark';
 
@@ -1612,7 +1753,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
       child: Center(
         heightFactor: 1.0,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 580),
+          constraints: BoxConstraints(maxWidth: contentMaxWidth),
           child: Container(
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             child: ClipRRect(

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,13 +26,48 @@ class AestheticShareModal extends StatefulWidget {
     this.onNotice,
   });
 
-  /// Displays the aesthetic card sharing modal.
+  /// Displays the aesthetic card sharing modal or centered floating desktop dialog.
   static Future<void> show(
     BuildContext context, {
     required InshortsFeedItem item,
     required StagePalette palette,
     void Function(String message)? onNotice,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth >= 900) {
+      return showDialog<void>(
+        context: context,
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        builder: (dialogContext) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 580, maxHeight: 680),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28.0),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                  child: AestheticShareModal(
+                    item: item,
+                    initialPalette: palette,
+                    onNotice: (msg) {
+                      if (onNotice != null) {
+                        onNotice(msg);
+                      } else {
+                        _showDefaultNotice(context, msg, palette);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -190,15 +226,21 @@ class _AestheticShareModalState extends State<AestheticShareModal> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isFloatingDialog = screenWidth >= 900;
     final isShort = screenHeight < 680;
     final modalHeight = screenHeight * (isShort ? 0.94 : 0.88);
     final palette = _selectedPalette;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: modalHeight),
+      constraints: isFloatingDialog ? null : BoxConstraints(maxHeight: modalHeight),
       decoration: BoxDecoration(
-        color: palette.cardSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
+        color: isFloatingDialog
+            ? palette.cardSurface.withValues(alpha: palette.isDarkPalette ? 0.82 : 0.90)
+            : palette.cardSurface,
+        borderRadius: isFloatingDialog
+            ? BorderRadius.circular(28.0)
+            : const BorderRadius.vertical(top: Radius.circular(28.0)),
         border: Border.all(
           color: palette.cardBorder.withValues(alpha: 0.8),
           width: 1.2,
@@ -218,18 +260,19 @@ class _AestheticShareModalState extends State<AestheticShareModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10.0, bottom: 8.0),
-                  width: 38.0,
-                  height: 4.5,
-                  decoration: BoxDecoration(
-                    color: palette.secondaryText.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(10.0),
+              // Drag handle (mobile bottom sheet only)
+              if (!isFloatingDialog)
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10.0, bottom: 8.0),
+                    width: 38.0,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: palette.secondaryText.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
                 ),
-              ),
 
               // Header with theme toggle
               Padding(

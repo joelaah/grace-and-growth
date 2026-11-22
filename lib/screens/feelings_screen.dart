@@ -13,11 +13,13 @@ import '../utils/mood_calendar_utils.dart';
 class FeelingsScreen extends StatefulWidget {
   final StagePalette palette;
   final JournalStorage? journalStorage;
+  final bool? isWideScreen;
 
   const FeelingsScreen({
     super.key,
     required this.palette,
     this.journalStorage,
+    this.isWideScreen,
   });
 
   @override
@@ -89,70 +91,127 @@ class _FeelingsScreenState extends State<FeelingsScreen> {
       );
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = widget.isWideScreen ?? (screenWidth >= 1024);
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 1200 : 700),
+          child: isWide
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Column 1: Weekly streak + Mood distribution + Legend
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader(palette, 'This Week'),
+                          const SizedBox(height: 12),
+                          _buildWeekStreak(palette),
+
+                          const SizedBox(height: 28),
+
+                          _buildSectionHeader(palette, 'Mood Distribution'),
+                          const SizedBox(height: 12),
+                          _buildMoodDistribution(palette),
+
+                          const SizedBox(height: 16),
+                          _buildLegend(palette),
+
+                          if (_moodHistory.isEmpty) ...[
+                            const SizedBox(height: 32),
+                            _buildEmptyState(palette),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 32),
+
+                    // Column 2: Monthly Calendar
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildMonthNav(palette),
+                          const SizedBox(height: 12),
+                          _buildCalendarGrid(palette),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Weekly Mood Streak
+                    _buildSectionHeader(palette, 'This Week'),
+                    const SizedBox(height: 12),
+                    _buildWeekStreak(palette),
+
+                    const SizedBox(height: 28),
+
+                    // Monthly Calendar
+                    _buildMonthNav(palette),
+                    const SizedBox(height: 12),
+                    _buildCalendarGrid(palette),
+
+                    const SizedBox(height: 28),
+
+                    // Mood Distribution
+                    _buildSectionHeader(palette, 'Mood Distribution'),
+                    const SizedBox(height: 12),
+                    _buildMoodDistribution(palette),
+
+                    const SizedBox(height: 16),
+
+                    // Legend
+                    _buildLegend(palette),
+
+                    // Empty state hint
+                    if (_moodHistory.isEmpty) ...[
+                      const SizedBox(height: 32),
+                      _buildEmptyState(palette),
+                    ],
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(StagePalette palette) {
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Weekly Mood Streak
-          _buildSectionHeader(palette, 'This Week'),
+          Icon(
+            Icons.psychology_alt_outlined,
+            size: 40,
+            color: palette.secondaryText.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
-          _buildWeekStreak(palette),
-
-          const SizedBox(height: 28),
-
-          // Monthly Calendar
-          _buildMonthNav(palette),
-          const SizedBox(height: 12),
-          _buildCalendarGrid(palette),
-
-          const SizedBox(height: 28),
-
-          // Mood Distribution
-          _buildSectionHeader(palette, 'Mood Distribution'),
-          const SizedBox(height: 12),
-          _buildMoodDistribution(palette),
-
-          const SizedBox(height: 16),
-
-          // Legend
-          _buildLegend(palette),
-
-          // Empty state hint
-          if (_moodHistory.isEmpty) ...[
-            const SizedBox(height: 32),
-            Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.psychology_alt_outlined,
-                    size: 40,
-                    color: palette.secondaryText.withValues(alpha: 0.4),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Your mood journey begins here',
-                    style: TextStyle(
-                      fontFamily: 'serif',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: palette.primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Select a mood chip each day to track\nhow your heart moves over time.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: palette.secondaryText,
-                    ),
-                  ),
-                ],
-              ),
+          Text(
+            'Your mood journey begins here',
+            style: TextStyle(
+              fontFamily: 'serif',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: palette.primaryText,
             ),
-          ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Select a mood chip each day to track\nhow your heart moves over time.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: palette.secondaryText,
+            ),
+          ),
         ],
       ),
     );

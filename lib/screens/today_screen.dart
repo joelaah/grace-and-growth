@@ -25,6 +25,7 @@ class TodayScreen extends StatefulWidget {
   final String langCode;
   final Set<String> bookmarkedIds;
   final ValueChanged<String>? onBookmarkToggle;
+  final bool? isWideScreen;
 
   const TodayScreen({
     super.key,
@@ -34,6 +35,7 @@ class TodayScreen extends StatefulWidget {
     this.langCode = 'eng',
     this.bookmarkedIds = const {},
     this.onBookmarkToggle,
+    this.isWideScreen,
   });
 
   @override
@@ -98,210 +100,256 @@ class _TodayScreenState extends State<TodayScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isWide = widget.isWideScreen ?? (screenWidth >= 1024 || constraints.maxWidth >= 900);
         final isNarrow = constraints.maxWidth < 340;
         final horizontalPadding = isNarrow ? 12.0 : 20.0;
+
+        final verseAndQuoteContent = _buildVerseAndQuoteSection(
+          palette,
+          todaysVerse: todaysVerse,
+          todaysQuote: todaysQuote,
+        );
+
+        final quietMomentAndIntentionContent = _buildQuietMomentAndIntentionSection(palette);
 
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Section: Verse of the Day with Reminder quick-action
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: FittedBox(
-                      alignment: Alignment.centerLeft,
-                      fit: BoxFit.scaleDown,
-                      child: _buildSectionHeader(
-                        palette,
-                        icon: Icons.auto_stories_outlined,
-                        title: 'Verse of the Day',
-                      ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isWide ? 1200 : 700),
+              child: isWide
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: verseAndQuoteContent),
+                        const SizedBox(width: 28),
+                        Expanded(child: quietMomentAndIntentionContent),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        verseAndQuoteContent,
+                        const SizedBox(height: 28),
+                        quietMomentAndIntentionContent,
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8.0),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: InkWell(
-                        onTap: () => NotificationTimePickerModal.show(context, palette),
-                        borderRadius: BorderRadius.circular(16.0),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
-                              const SizedBox(width: 4.0),
-                              Text(
-                                'Reminder',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.w500,
-                                  color: palette.secondaryText,
-                                ),
-                              ),
-                            ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Verse of the Day and Quote of the Day section.
+  Widget _buildVerseAndQuoteSection(
+    StagePalette palette, {
+    required InshortsFeedItem? todaysVerse,
+    required InshortsFeedItem? todaysQuote,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section: Verse of the Day with Reminder quick-action
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: _buildSectionHeader(
+                  palette,
+                  icon: Icons.auto_stories_outlined,
+                  title: 'Verse of the Day',
+                ),
+              ),
+            ),
+            const SizedBox(width: 8.0),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: InkWell(
+                  onTap: () => NotificationTimePickerModal.show(context, palette),
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
+                        const SizedBox(width: 4.0),
+                        Text(
+                          'Reminder',
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w500,
+                            color: palette.secondaryText,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-          const SizedBox(height: 10),
-          if (todaysVerse != null)
-            _buildContentCard(palette, todaysVerse)
-          else
-            _buildEmptyCard(palette, 'No verse available today'),
-
-          const SizedBox(height: 24),
-
-          // Section: Quote of the Day
-          _buildSectionHeader(
-            palette,
-            icon: Icons.format_quote_rounded,
-            title: 'Quote of the Day',
-          ),
-          const SizedBox(height: 10),
-          if (todaysQuote != null)
-            _buildContentCard(palette, todaysQuote)
-          else
-            _buildEmptyCard(palette, 'No quote available today'),
-
-          const SizedBox(height: 28),
-
-          // Section: Contemplation Timer
-          _buildSectionHeader(
-            palette,
-            icon: Icons.self_improvement_outlined,
-            title: 'Quiet Moment',
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Take a breath. Be still for a moment.',
-            style: TextStyle(
-              fontSize: 13,
-              color: palette.secondaryText,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Duration chips
-          Center(
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildDurationChip(palette, 60, '1 min'),
-                _buildDurationChip(palette, 120, '2 min'),
-                _buildDurationChip(palette, 180, '3 min'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Timer widget
-          Center(
-            child: ContemplationTimer(
-              key: ValueKey('timer_$_timerDuration'),
-              durationSeconds: _timerDuration,
-              accentColor: palette.accent,
-              textColor: palette.primaryText,
-              ringBackgroundColor: palette.cardBorder,
-              onComplete: () {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Peace be with you',
-                        style: TextStyle(color: palette.primaryText),
-                      ),
-                      backgroundColor: palette.cardSurface,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
-          // Section: Daily Intention
-          _buildSectionHeader(
-            palette,
-            icon: Icons.edit_outlined,
-            title: 'Daily Intention',
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Set a single focus for today.',
-            style: TextStyle(
-              fontSize: 13,
-              color: palette.secondaryText,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: palette.cardSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: palette.cardBorder.withValues(alpha: 0.6),
-              ),
-            ),
-            child: TextField(
-              controller: _intentionController,
-              maxLines: 2,
-              style: TextStyle(
-                fontSize: 15,
-                color: palette.primaryText,
-                height: 1.4,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Today I will be present in...',
-                hintStyle: TextStyle(
-                  color: palette.secondaryText.withValues(alpha: 0.5),
-                  fontSize: 14,
-                ),
-                contentPadding: const EdgeInsets.all(16),
-                border: InputBorder.none,
-                suffixIcon: IconButton(
-                  onPressed: _saveDailyIntention,
-                  icon: Icon(
-                    _intentionSaved
-                        ? Icons.check_circle
-                        : Icons.check_circle_outline,
-                    color: _intentionSaved
-                        ? palette.accent
-                        : palette.secondaryText,
-                    size: 22,
                   ),
                 ),
               ),
-              onChanged: (_) {
-                if (_intentionSaved) {
-                  setState(() => _intentionSaved = false);
-                }
-              },
-              onSubmitted: (_) => _saveDailyIntention(),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (todaysVerse != null)
+          _buildContentCard(palette, todaysVerse)
+        else
+          _buildEmptyCard(palette, 'No verse available today'),
+
+        const SizedBox(height: 24),
+
+        // Section: Quote of the Day
+        _buildSectionHeader(
+          palette,
+          icon: Icons.format_quote_rounded,
+          title: 'Quote of the Day',
+        ),
+        const SizedBox(height: 10),
+        if (todaysQuote != null)
+          _buildContentCard(palette, todaysQuote)
+        else
+          _buildEmptyCard(palette, 'No quote available today'),
+      ],
     );
-      },
+  }
+
+  /// Quiet Moment (Breathing timer) and Daily Intention section.
+  Widget _buildQuietMomentAndIntentionSection(StagePalette palette) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section: Contemplation Timer
+        _buildSectionHeader(
+          palette,
+          icon: Icons.self_improvement_outlined,
+          title: 'Quiet Moment',
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Take a breath. Be still for a moment.',
+          style: TextStyle(
+            fontSize: 13,
+            color: palette.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Duration chips
+        Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildDurationChip(palette, 60, '1 min'),
+              _buildDurationChip(palette, 120, '2 min'),
+              _buildDurationChip(palette, 180, '3 min'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Timer widget
+        Center(
+          child: ContemplationTimer(
+            key: ValueKey('timer_$_timerDuration'),
+            durationSeconds: _timerDuration,
+            accentColor: palette.accent,
+            textColor: palette.primaryText,
+            ringBackgroundColor: palette.cardBorder,
+            onComplete: () {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Peace be with you',
+                      style: TextStyle(color: palette.primaryText),
+                    ),
+                    backgroundColor: palette.cardSurface,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+
+        const SizedBox(height: 28),
+
+        // Section: Daily Intention
+        _buildSectionHeader(
+          palette,
+          icon: Icons.edit_outlined,
+          title: 'Daily Intention',
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Set a single focus for today.',
+          style: TextStyle(
+            fontSize: 13,
+            color: palette.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: palette.cardSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: palette.cardBorder.withValues(alpha: 0.6),
+            ),
+          ),
+          child: TextField(
+            controller: _intentionController,
+            maxLines: 2,
+            style: TextStyle(
+              fontSize: 15,
+              color: palette.primaryText,
+              height: 1.4,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Today I will be present in...',
+              hintStyle: TextStyle(
+                color: palette.secondaryText.withValues(alpha: 0.5),
+                fontSize: 14,
+              ),
+              contentPadding: const EdgeInsets.all(16),
+              border: InputBorder.none,
+              suffixIcon: IconButton(
+                onPressed: _saveDailyIntention,
+                icon: Icon(
+                  _intentionSaved
+                      ? Icons.check_circle
+                      : Icons.check_circle_outline,
+                  color: _intentionSaved
+                      ? palette.accent
+                      : palette.secondaryText,
+                  size: 22,
+                ),
+              ),
+            ),
+            onChanged: (_) {
+              if (_intentionSaved) {
+                setState(() => _intentionSaved = false);
+              }
+            },
+            onSubmitted: (_) => _saveDailyIntention(),
+          ),
+        ),
+      ],
     );
   }
 

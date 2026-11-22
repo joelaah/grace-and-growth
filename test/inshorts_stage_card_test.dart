@@ -5,6 +5,7 @@ import 'package:bible_glory/models/tagged_verse.dart';
 import 'package:bible_glory/services/quote_api_service.dart';
 import 'package:bible_glory/theme/mood_stage_theme.dart';
 import 'package:bible_glory/widgets/inshorts_stage_card.dart';
+import 'package:bible_glory/widgets/living_audio_bars.dart';
 
 void main() {
   final testVerse = TaggedVerse(
@@ -314,6 +315,64 @@ void main() {
         return false;
       });
       expect(bottomSectionFinder, findsOneWidget);
+    });
+
+    testWidgets('Renders panoramic desktop card on constraints.maxWidth >= 900', (tester) async {
+      final verseItem = InshortsFeedItem.fromVerse(testVerse, langCode: 'eng');
+
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 1200,
+              height: 700,
+              child: InshortsStageCard(
+                item: verseItem,
+                palette: StagePalette.gloomy,
+                langCode: 'eng',
+                onResearch: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      // Verify Left Sanctuary Altar (flex: 58) & Right Companion Wing (flex: 42)
+      final expandedWidgets = tester.widgetList<Expanded>(find.descendant(
+        of: find.byType(InshortsStageCard),
+        matching: find.byType(Expanded),
+      )).toList();
+      final flexValues = expandedWidgets.map((e) => e.flex).toList();
+      expect(flexValues, contains(58));
+      expect(flexValues, contains(42));
+
+      // Verify Cormorant Garamond scripture text and font size 30.0
+      final scriptureFinder = find.text('“The Lord is close to the brokenhearted.”');
+      expect(scriptureFinder, findsOneWidget);
+      final scriptureWidget = tester.widget<Text>(scriptureFinder);
+      expect(scriptureWidget.style?.fontSize, equals(30.0));
+      expect(scriptureWidget.style?.fontFamilyFallback, contains('Cormorant Garamond'));
+
+      // Verify living audio wave bars in dock
+      expect(find.byType(LivingAudioBars), findsOneWidget);
+
+      // Verify Action buttons and shortcut badges
+      expect(find.text('Save'), findsOneWidget);
+      expect(find.text('Share'), findsOneWidget);
+      expect(find.text('Research'), findsOneWidget);
+      expect(find.text('[S]'), findsOneWidget);
+      expect(find.text('[Space]'), findsOneWidget);
+      expect(find.text('[R]'), findsOneWidget);
     });
   });
 }

@@ -1,8 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
 import '../theme/mood_stage_theme.dart';
 
-/// Modal bottom sheet allowing the user to select or disable their daily contemplative reminder.
+/// Modal bottom sheet or floating desktop dialog allowing the user to select or disable their daily contemplative reminder.
 class NotificationTimePickerModal extends StatefulWidget {
   final StagePalette palette;
 
@@ -12,6 +13,29 @@ class NotificationTimePickerModal extends StatefulWidget {
   });
 
   static Future<void> show(BuildContext context, StagePalette palette) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth >= 900) {
+      return showDialog(
+        context: context,
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        builder: (_) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28.0),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                child: NotificationTimePickerModal(palette: palette),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -88,23 +112,34 @@ class _NotificationTimePickerModalState
   @override
   Widget build(BuildContext context) {
     final palette = widget.palette;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isFloatingDialog = screenWidth >= 900;
 
     return Container(
       decoration: BoxDecoration(
-        color: palette.cardSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
-        border: Border(
-          top: BorderSide(
-            color: palette.cardBorder.withValues(alpha: 0.6),
-            width: 1.0,
-          ),
-        ),
+        color: isFloatingDialog
+            ? palette.cardSurface.withValues(alpha: palette.isDarkPalette ? 0.82 : 0.90)
+            : palette.cardSurface,
+        borderRadius: isFloatingDialog
+            ? BorderRadius.circular(28.0)
+            : const BorderRadius.vertical(top: Radius.circular(28.0)),
+        border: isFloatingDialog
+            ? Border.all(
+                color: palette.cardBorder.withValues(alpha: 0.8),
+                width: 1.2,
+              )
+            : Border(
+                top: BorderSide(
+                  color: palette.cardBorder.withValues(alpha: 0.6),
+                  width: 1.0,
+                ),
+              ),
       ),
       padding: EdgeInsets.fromLTRB(
         24.0,
         16.0,
         24.0,
-        MediaQuery.of(context).viewInsets.bottom + 28.0,
+        isFloatingDialog ? 24.0 : MediaQuery.of(context).viewInsets.bottom + 28.0,
       ),
       child: _isLoading
           ? const SizedBox(
@@ -117,19 +152,31 @@ class _NotificationTimePickerModalState
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top handle
-                  Center(
-                    child: Container(
-                      width: 38.0,
-                      height: 4.0,
-                      decoration: BoxDecoration(
-                        color: palette.secondaryText.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(2.0),
+                  // Top handle (mobile only)
+                  if (!isFloatingDialog) ...[
+                    Center(
+                      child: Container(
+                        width: 38.0,
+                        height: 4.0,
+                        decoration: BoxDecoration(
+                          color: palette.secondaryText.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(2.0),
+                        ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 18.0),
+                    const SizedBox(height: 18.0),
+                  ] else ...[
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: Icon(Icons.close_rounded, size: 20.0, color: palette.secondaryText),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ),
+                    const SizedBox(height: 8.0),
+                  ],
 
                   // Header
                   Row(
