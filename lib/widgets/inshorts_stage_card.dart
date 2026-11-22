@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/inshorts_feed_item.dart';
 import '../services/tts_service.dart';
@@ -35,8 +36,6 @@ class InshortsStageCard extends StatefulWidget {
 }
 
 class _InshortsStageCardState extends State<InshortsStageCard> {
-  final GlobalKey _cardBoundaryKey = GlobalKey();
-
   @override
   Widget build(BuildContext context) {
     final palette = widget.palette;
@@ -50,38 +49,39 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
         final isNarrow = constraints.maxWidth < 320 || textScale > 1.25;
         final isWide = constraints.maxWidth >= 720;
 
-        return RepaintBoundary(
-          key: _cardBoundaryKey,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeInOutCubic,
-            margin: EdgeInsets.symmetric(
-              horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
-              vertical: isVeryShort ? 2.0 : (isShort ? 4.0 : 8.0),
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic,
+          width: double.infinity,
+          height: double.infinity,
+          margin: EdgeInsets.symmetric(
+            horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
+            vertical: isVeryShort ? 2.0 : (isShort ? 4.0 : 8.0),
+          ),
+          decoration: BoxDecoration(
+            color: palette.cardSurface.withValues(alpha: widget.palette.isDarkPalette ? 0.72 : 0.86),
+            borderRadius: BorderRadius.circular(24.0),
+            border: Border.all(
+              color: palette.cardBorder.withValues(alpha: widget.palette.isDarkPalette ? 0.75 : 0.9),
+              width: 1.2,
             ),
-            decoration: BoxDecoration(
-              color: palette.cardSurface,
-              borderRadius: BorderRadius.circular(24.0),
-              border: Border.all(
-                color: palette.cardBorder.withValues(alpha: 0.75),
-                width: 1.0,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: widget.palette.isDarkPalette ? 0.35 : 0.08),
+                blurRadius: 28.0,
+                offset: const Offset(0, 10),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 20.0,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: palette.accent.withValues(alpha: 0.08),
-                  blurRadius: 32.0,
-                  offset: const Offset(0, 4),
-                  spreadRadius: 2.0,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24.0),
+              BoxShadow(
+                color: palette.accent.withValues(alpha: widget.palette.isDarkPalette ? 0.12 : 0.05),
+                blurRadius: 36.0,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24.0),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
               child: Column(
                 children: [
                   // Top 55%: Source badge, main text in serif, and reference/author

@@ -32,10 +32,10 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+  <!-- Google Fonts: Cormorant Garamond, Noto Sans Devanagari & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* Sacred Cathedral Typography Mapping (Zero-FOUT & Test-Safe) */
@@ -77,12 +77,79 @@
     [style*="font-family:serif"],
     [style*='font-family: "serif"'],
     [style*="font-family: 'serif'"] {
-      font-family: 'Cormorant Garamond', Georgia, serif !important;
+      font-family: 'Cormorant Garamond', 'Noto Sans Devanagari', Georgia, serif !important;
     }
   </style>
 
   <title>Grace & Growth - Daily Sanctuary</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    // PWA Service Worker auto-update: skips waiting and reloads so new deployments activate immediately
+    if ('serviceWorker' in navigator) {
+      var _isRefreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (!_isRefreshing) {
+          _isRefreshing = true;
+          window.location.reload();
+        }
+      });
+
+      function handleRegistration(reg) {
+        if (!reg) return;
+        try {
+          reg.update().catch(function() {});
+        } catch (_) {}
+
+        function trySkipWaiting(worker) {
+          if (worker) {
+            try {
+              worker.postMessage({ action: 'skipWaiting' });
+              worker.postMessage('skipWaiting');
+            } catch (_) {}
+          }
+        }
+
+        if (reg.waiting) {
+          trySkipWaiting(reg.waiting);
+        }
+
+        if (reg.installing) {
+          reg.installing.addEventListener('statechange', function() {
+            if (reg.installing && reg.installing.state === 'installed' && navigator.serviceWorker.controller) {
+              trySkipWaiting(reg.installing);
+            }
+          });
+        }
+
+        reg.addEventListener('updatefound', function() {
+          var worker = reg.installing;
+          if (worker) {
+            worker.addEventListener('statechange', function() {
+              if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                trySkipWaiting(worker);
+              }
+            });
+          }
+        });
+      }
+
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (var i = 0; i < registrations.length; i++) {
+          handleRegistration(registrations[i]);
+        }
+      }).catch(function() {});
+
+      navigator.serviceWorker.ready.then(handleRegistration).catch(function() {});
+
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var i = 0; i < registrations.length; i++) {
+            handleRegistration(registrations[i]);
+          }
+        }).catch(function() {});
+      });
+    }
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

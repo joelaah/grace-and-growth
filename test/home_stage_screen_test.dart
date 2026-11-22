@@ -273,7 +273,7 @@ void main() {
       expect(find.byType(InshortsStageCard), findsWidgets);
     });
 
-    testWidgets('Renders full width with comfortable margins (20-32dp) on 1024x768 tablet viewport', (tester) async {
+    testWidgets('Renders centered with max width 600dp on 1024x768 tablet viewport', (tester) async {
       tester.view.physicalSize = const Size(1024, 768);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -286,19 +286,13 @@ void main() {
 
       expect(tester.takeException(), isNull);
       final cardWidget = tester.getRect(find.byType(InshortsStageCard).first);
-      // InshortsStageCard occupies full page width
-      expect(cardWidget.width, equals(1024.0));
-
-      // Inner card surface has comfortable margins (20-32dp, 24dp) + 1dp border
-      final cardSurface = tester.getRect(
-        find.descendant(of: find.byType(InshortsStageCard).first, matching: find.byType(ClipRRect)).first,
-      );
-      expect(cardSurface.width, equals(1024.0 - 50.0));
-      expect(cardSurface.left, equals(25.0));
-      expect(cardSurface.right, equals(999.0));
+      // InshortsStageCard is centered with max width 600dp rather than stretching across full screen
+      expect(cardWidget.width, equals(600.0));
+      expect(cardWidget.left, equals((1024.0 - 600.0) / 2));
+      expect(cardWidget.right, equals(1024.0 - (1024.0 - 600.0) / 2));
     });
 
-    testWidgets('Renders full width with comfortable margins (20-32dp) on 1920x1080 desktop viewport', (tester) async {
+    testWidgets('Renders centered with max width 600dp on 1920x1080 desktop viewport', (tester) async {
       tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -311,16 +305,10 @@ void main() {
 
       expect(tester.takeException(), isNull);
       final cardWidget = tester.getRect(find.byType(InshortsStageCard).first);
-      // InshortsStageCard occupies full page width
-      expect(cardWidget.width, equals(1920.0));
-
-      // Inner card surface has comfortable margins (20-32dp, 24dp) + 1dp border
-      final cardSurface = tester.getRect(
-        find.descendant(of: find.byType(InshortsStageCard).first, matching: find.byType(ClipRRect)).first,
-      );
-      expect(cardSurface.width, equals(1920.0 - 50.0));
-      expect(cardSurface.left, equals(25.0));
-      expect(cardSurface.right, equals(1895.0));
+      // InshortsStageCard is centered with max width 600dp rather than stretching across 1920px
+      expect(cardWidget.width, equals(600.0));
+      expect(cardWidget.left, equals((1920.0 - 600.0) / 2));
+      expect(cardWidget.right, equals(1920.0 - (1920.0 - 600.0) / 2));
     });
 
     testWidgets('Renders without overflow under 1.5x accessibility text scaling', (tester) async {

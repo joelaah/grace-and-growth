@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/mood_stage_theme.dart';
@@ -52,6 +53,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = _pagePalettes[_currentPage];
+    final mediaQuery = MediaQuery.of(context);
+    final isWideScreen = mediaQuery.size.width >= 720;
+    final isDark = palette.isDarkPalette;
 
     return Scaffold(
       body: AnimatedContainer(
@@ -64,105 +68,149 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             colors: [palette.bgTop, palette.bgBottom],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: TextButton(
-                    onPressed: _completeOnboarding,
-                    child: Text(
-                      'Skip',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: palette.secondaryText,
-                      ),
+        child: Stack(
+          children: [
+            // Top-right luminous candlelight halo (warm amber / golden radiance)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(isWideScreen ? 0.30 : 0.65, -0.60),
+                      radius: isWideScreen ? 0.75 : 0.95,
+                      colors: [
+                        palette.accent.withValues(alpha: isDark ? 0.20 : 0.12),
+                        Colors.transparent,
+                      ],
                     ),
                   ),
                 ),
               ),
-
-              // Pages
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() => _currentPage = index);
-                  },
-                  children: [
-                    _buildMoodPage(),
-                    _buildSwipePage(),
-                    _buildMysteryPage(),
-                  ],
+            ),
+            // Bottom-left deep celestial glow (twilight sapphire / sacred radiance)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(isWideScreen ? -0.30 : -0.65, 0.60),
+                      radius: isWideScreen ? 0.85 : 1.05,
+                      colors: [
+                        (isDark ? const Color(0xFF1B2433) : const Color(0xFFE8DFC8))
+                            .withValues(alpha: isDark ? 0.45 : 0.30),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
                 ),
               ),
-
-              // Page indicator dots + action button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Dots
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(3, (i) {
-                        final isActive = i == _currentPage;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: isActive ? 24 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? palette.accent
-                                : palette.secondaryText.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        );
-                      }),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Next / Begin button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _currentPage < 2
-                            ? () => _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 400),
-                                  curve: Curves.easeInOutCubic,
-                                )
-                            : _completeOnboarding,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: palette.accent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          _currentPage < 2 ? 'Next' : 'Begin',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
+            ),
+            SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 540),
+                  child: Column(
+                    children: [
+                      // Skip button
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: TextButton(
+                            onPressed: _completeOnboarding,
+                            child: Text(
+                              'Skip',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: palette.secondaryText,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+
+                      // Pages
+                      Expanded(
+                        child: PageView(
+                          controller: _pageController,
+                          onPageChanged: (index) {
+                            setState(() => _currentPage = index);
+                          },
+                          children: [
+                            _buildMoodPage(),
+                            _buildSwipePage(),
+                            _buildMysteryPage(),
+                          ],
+                        ),
+                      ),
+
+                      // Page indicator dots + action button
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Dots
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(3, (i) {
+                                final isActive = i == _currentPage;
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  width: isActive ? 24 : 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? palette.accent
+                                        : palette.secondaryText.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                );
+                              }),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Next / Begin button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _currentPage < 2
+                                    ? () => _pageController.nextPage(
+                                          duration: const Duration(milliseconds: 400),
+                                          curve: Curves.easeInOutCubic,
+                                        )
+                                    : _completeOnboarding,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: palette.accent,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  _currentPage < 2 ? 'Next' : 'Begin',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -219,36 +267,50 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   alignment: WrapAlignment.center,
                   children: MoodStage.values.map((stage) {
                     final sp = stage.palette;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: palette.cardSurface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: sp.accent.withValues(alpha: 0.5),
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: palette.cardSurface.withValues(alpha: 0.72),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: sp.accent.withValues(alpha: 0.55),
+                              width: 1.1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: sp.accent,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                sp.stageLabel,
+                                style: TextStyle(
+                                  fontSize: isCompact ? 11 : 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: palette.primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: sp.accent,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            sp.stageLabel,
-                            style: TextStyle(
-                              fontSize: isCompact ? 11 : 12,
-                              fontWeight: FontWeight.w500,
-                              color: palette.primaryText,
-                            ),
-                          ),
-                        ],
                       ),
                     );
                   }).toList(),
@@ -263,6 +325,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildSwipePage() {
     final palette = _pagePalettes[1];
+    final isDark = palette.isDarkPalette;
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 520 || constraints.maxWidth < 340;
@@ -305,45 +368,64 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 SizedBox(height: verticalGap),
-                // Mini card preview
-                Container(
-                  padding: EdgeInsets.all(isCompact ? 14 : 20),
-                  decoration: BoxDecoration(
-                    color: palette.cardSurface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: palette.cardBorder.withValues(alpha: 0.6),
+                // Mini card preview with frosted glass styling
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                    child: Container(
+                      padding: EdgeInsets.all(isCompact ? 14 : 20),
+                      decoration: BoxDecoration(
+                        color: palette.cardSurface.withValues(alpha: isDark ? 0.72 : 0.84),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: palette.cardBorder.withValues(alpha: 0.75),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.16),
+                            blurRadius: 22,
+                            offset: const Offset(0, 6),
+                          ),
+                          BoxShadow(
+                            color: palette.accent.withValues(alpha: 0.10),
+                            blurRadius: 28,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_stories_outlined,
+                            size: isCompact ? 22 : 28,
+                            color: palette.accent,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '"Be still, and know\nthat I am God."',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: isCompact ? 14 : 16,
+                              height: 1.35,
+                              color: palette.primaryText,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Psalm 46:10',
+                            style: TextStyle(
+                              fontSize: isCompact ? 11 : 12,
+                              fontWeight: FontWeight.w600,
+                              color: palette.accent,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.auto_stories_outlined,
-                        size: isCompact ? 22 : 28,
-                        color: palette.accent,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '"Be still, and know\nthat I am God."',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'serif',
-                          fontSize: isCompact ? 14 : 16,
-                          height: 1.35,
-                          color: palette.primaryText,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Psalm 46:10',
-                        style: TextStyle(
-                          fontSize: isCompact ? 11 : 12,
-                          fontWeight: FontWeight.w600,
-                          color: palette.accent,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
@@ -376,12 +458,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: bubbleSize,
                   height: bubbleSize,
                   decoration: BoxDecoration(
-                    color: palette.accent.withValues(alpha: 0.12),
+                    color: palette.accent.withValues(alpha: 0.16),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: palette.accent.withValues(alpha: 0.3),
+                      color: palette.accent.withValues(alpha: 0.5),
                       width: 2,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: palette.accent.withValues(alpha: 0.22),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                      ),
+                    ],
                   ),
                   child: Icon(
                     Icons.inventory_2_outlined,
