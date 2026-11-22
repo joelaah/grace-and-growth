@@ -37,11 +37,11 @@ class StagePalette {
 
   /// Gloomy & Heavy palette (Twilight contemplation / Sanctuary Twilight)
   static const StagePalette gloomy = StagePalette(
-    bgTop: Color(0xFF161B26),
-    bgBottom: Color(0xFF1E2433),
-    cardSurface: Color(0xFF242C3D),
-    cardBorder: Color(0xFF364158),
-    primaryText: Color(0xFFEDE8DF),
+    bgTop: Color(0xFF0D111A),
+    bgBottom: Color(0xFF141923),
+    cardSurface: Color(0xFF19202D),
+    cardBorder: Color(0x38DEB377),
+    primaryText: Color(0xFFF4F0E8),
     secondaryText: Color(0xFFA5B1C2),
     accent: Color(0xFFDEB377),
     stageLabel: 'Gloomy & Heavy',
@@ -49,11 +49,11 @@ class StagePalette {
 
   /// Growing in Sorrow palette (Deep quiet growth in reverent sanctuary dark)
   static const StagePalette growing = StagePalette(
-    bgTop: Color(0xFF161B26),
-    bgBottom: Color(0xFF1E2433),
-    cardSurface: Color(0xFF242C3D),
-    cardBorder: Color(0xFF364158),
-    primaryText: Color(0xFFEDE8DF),
+    bgTop: Color(0xFF0D111A),
+    bgBottom: Color(0xFF141923),
+    cardSurface: Color(0xFF19202D),
+    cardBorder: Color(0x38DEB377),
+    primaryText: Color(0xFFF4F0E8),
     secondaryText: Color(0xFFA5B1C2),
     accent: Color(0xFFD49E72),
     stageLabel: 'Growing in Sorrow',
@@ -61,9 +61,9 @@ class StagePalette {
 
   /// Bright & Grateful palette (Sunlit sacred manuscript / Eye-soothing warm linen)
   static const StagePalette bright = StagePalette(
-    bgTop: Color(0xFFF8F5EE),
-    bgBottom: Color(0xFFEFE8DB),
-    cardSurface: Color(0xFFFCFAF6),
+    bgTop: Color(0xFFFFFDF8),
+    bgBottom: Color(0xFFF3ECE0),
+    cardSurface: Color(0xFFFAF7F0),
     cardBorder: Color(0xFFE2D9C8),
     primaryText: Color(0xFF2E2620),
     secondaryText: Color(0xFF756A5E),
@@ -73,9 +73,9 @@ class StagePalette {
 
   /// Walking Humbly palette (Quiet sacred parchment & gentle warm umber)
   static const StagePalette humble = StagePalette(
-    bgTop: Color(0xFFF8F5EE),
-    bgBottom: Color(0xFFEFE8DB),
-    cardSurface: Color(0xFFFCFAF6),
+    bgTop: Color(0xFFFFFDF8),
+    bgBottom: Color(0xFFF3ECE0),
+    cardSurface: Color(0xFFFAF7F0),
     cardBorder: Color(0xFFE2D9C8),
     primaryText: Color(0xFF2E2620),
     secondaryText: Color(0xFF756A5E),
@@ -85,11 +85,11 @@ class StagePalette {
 
   /// Canonical Spiritual Bible Dark Palette (Sanctuary Twilight & Holy Reverence)
   static const StagePalette bibleDark = StagePalette(
-    bgTop: Color(0xFF161B26),
-    bgBottom: Color(0xFF1E2433),
-    cardSurface: Color(0xFF242C3D),
-    cardBorder: Color(0xFF364158),
-    primaryText: Color(0xFFEDE8DF),
+    bgTop: Color(0xFF0D111A),
+    bgBottom: Color(0xFF141923),
+    cardSurface: Color(0xFF19202D),
+    cardBorder: Color(0x38DEB377),
+    primaryText: Color(0xFFF4F0E8),
     secondaryText: Color(0xFFA5B1C2),
     accent: Color(0xFFDEB377),
     stageLabel: 'Sanctuary Twilight',
@@ -97,9 +97,9 @@ class StagePalette {
 
   /// Canonical Spiritual Bible Light Palette (Sacred Scripture & Ancient Parchment Linen)
   static const StagePalette bibleLight = StagePalette(
-    bgTop: Color(0xFFF8F5EE),
-    bgBottom: Color(0xFFEFE8DB),
-    cardSurface: Color(0xFFFCFAF6),
+    bgTop: Color(0xFFFFFDF8),
+    bgBottom: Color(0xFFF3ECE0),
+    cardSurface: Color(0xFFFAF7F0),
     cardBorder: Color(0xFFE2D9C8),
     primaryText: Color(0xFF2E2620),
     secondaryText: Color(0xFF756A5E),

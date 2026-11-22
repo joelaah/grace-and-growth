@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/tagged_verse.dart';
 import '../theme/mood_stage_theme.dart';
+import 'living_audio_bars.dart';
 
 /// Data model representing a Scripture passage and companion reflection
 /// localized for the selected contemplative mood and language.
@@ -279,7 +280,35 @@ class VerseStageCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildScriptureCard(),
-        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 1.0,
+                  color: palette.cardBorder.withValues(alpha: 0.35),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Text(
+                  '❖',
+                  style: TextStyle(
+                    fontSize: 12.0,
+                    color: palette.accent.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 1.0,
+                  color: palette.cardBorder.withValues(alpha: 0.35),
+                ),
+              ),
+            ],
+          ),
+        ),
         _buildReflectionCard(),
         const SizedBox(height: 20),
         _buildFloatingActionRow(),
@@ -298,9 +327,15 @@ class VerseStageCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20.0,
             offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: palette.accent.withValues(alpha: 0.08),
+            blurRadius: 32.0,
+            offset: const Offset(0, 4),
+            spreadRadius: 2.0,
           ),
         ],
       ),
@@ -373,6 +408,11 @@ class VerseStageCard extends StatelessWidget {
             '“${verse.scriptureFor(langCode)}”',
             style: TextStyle(
               fontFamily: 'serif',
+              fontFamilyFallback: const [
+                'Cormorant Garamond',
+                'Noto Sans Devanagari',
+                'Georgia',
+              ],
               fontSize: 22.0,
               height: 1.48,
               fontWeight: FontWeight.w400,
@@ -438,9 +478,15 @@ class VerseStageCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16.0,
             offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: palette.accent.withValues(alpha: 0.08),
+            blurRadius: 32.0,
+            offset: const Offset(0, 4),
+            spreadRadius: 2.0,
           ),
         ],
       ),
@@ -581,8 +627,11 @@ class VerseStageCard extends StatelessWidget {
             ),
             _buildDivider(),
             _buildActionButton(
-              icon: isPlayingAudio ? Icons.pause_circle_outline_rounded : Icons.volume_up_outlined,
-              label: isPlayingAudio ? 'Pause' : 'Listen',
+              customIcon: isPlayingAudio
+                  ? LivingAudioBars(color: palette.accent, isPlaying: true)
+                  : null,
+              icon: isPlayingAudio ? null : Icons.volume_up_outlined,
+              label: isPlayingAudio ? 'Playing' : 'Listen',
               isActive: isPlayingAudio,
               onTap: onAudioToggle,
             ),
@@ -609,7 +658,8 @@ class VerseStageCard extends StatelessWidget {
   }
 
   Widget _buildActionButton({
-    required IconData icon,
+    IconData? icon,
+    Widget? customIcon,
     required String label,
     required bool isActive,
     required VoidCallback? onTap,
@@ -628,7 +678,10 @@ class VerseStageCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18.0, color: color),
+              if (customIcon != null)
+                SizedBox(height: 18.0, child: Center(child: customIcon))
+              else if (icon != null)
+                Icon(icon, size: 18.0, color: color),
               const SizedBox(height: 2.0),
               Text(
                 label,

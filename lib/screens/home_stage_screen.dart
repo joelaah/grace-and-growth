@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -538,7 +539,11 @@ class HomeStageScreenState extends State<HomeStageScreen> {
         unselectedItemColor: palette.secondaryText.withValues(alpha: 0.75),
       ),
       fontFamily: 'serif',
-      fontFamilyFallback: const ['Noto Sans Devanagari'],
+      fontFamilyFallback: const [
+        'Cormorant Garamond',
+        'Noto Sans Devanagari',
+        'Georgia',
+      ],
     );
 
     return AnimatedTheme(
@@ -546,7 +551,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeInOutCubic,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: palette.bgBottom,
         body: AnimatedContainer(
           duration: const Duration(milliseconds: 600),
           curve: Curves.easeInOutCubic,
@@ -559,80 +564,101 @@ class HomeStageScreenState extends State<HomeStageScreen> {
               colors: [palette.bgTop, palette.bgBottom],
             ),
           ),
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isShort = constraints.maxHeight < 600 || textScale > 1.25;
-                final isVeryShort = constraints.maxHeight < 460;
-                final isNarrow = constraints.maxWidth < 340 || textScale > 1.25;
-                final isWide = constraints.maxWidth >= 720;
-                final horizontalPadding = isNarrow ? 10.0 : (isWide ? 24.0 : 20.0);
-
-                return Focus(
-                  focusNode: _focusNode,
-                  autofocus: true,
-                  onKeyEvent: (node, event) {
-                    // Only handle keyboard for Reflect tab (feed)
-                    if (_currentNavIndex != 1) return KeyEventResult.ignored;
-                    if (event is KeyDownEvent || event is KeyRepeatEvent) {
-                      if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
-                          event.logicalKey == LogicalKeyboardKey.pageDown ||
-                          (event.logicalKey == LogicalKeyboardKey.space &&
-                              !HardwareKeyboard.instance.isShiftPressed)) {
-                        _animateToRelativePage(1);
-                        return KeyEventResult.handled;
-                      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
-                          event.logicalKey == LogicalKeyboardKey.pageUp ||
-                          (event.logicalKey == LogicalKeyboardKey.space &&
-                              HardwareKeyboard.instance.isShiftPressed)) {
-                        _animateToRelativePage(-1);
-                        return KeyEventResult.handled;
-                      }
-                    }
-                    return KeyEventResult.ignored;
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Top Bar with App Title, Filter Toggle, and Language Selector
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          isVeryShort ? 4.0 : (isShort ? 6.0 : 12.0),
-                          horizontalPadding,
-                          0.0,
-                        ),
-                        child: _buildHeaderBar(
-                          palette,
-                          isShort: isShort,
-                          isVeryShort: isVeryShort,
-                          isNarrow: isNarrow,
-                        ),
+          child: Stack(
+            children: [
+              // Ambient radial candlelight glow overlay
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(0.0, -0.25),
+                        radius: 0.95,
+                        colors: [
+                          palette.accent.withValues(alpha: isDark ? 0.05 : 0.035),
+                          Colors.transparent,
+                        ],
                       ),
-                      SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
-
-                      // "How is your heart today?" mood chips
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                        child: _buildMoodSection(
-                          palette,
-                          isShort: isShort,
-                          isVeryShort: isVeryShort,
-                          isNarrow: isNarrow,
-                          textScale: textScale,
-                        ),
-                      ),
-                      SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
-
-                      // Tab content area
-                      Expanded(
-                        child: _buildTabContent(palette),
-                      ),
-                    ],
+                    ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isShort = constraints.maxHeight < 600 || textScale > 1.25;
+                    final isVeryShort = constraints.maxHeight < 460;
+                    final isNarrow = constraints.maxWidth < 340 || textScale > 1.25;
+                    final isWide = constraints.maxWidth >= 720;
+                    final horizontalPadding = isNarrow ? 10.0 : (isWide ? 24.0 : 20.0);
+
+                    return Focus(
+                      focusNode: _focusNode,
+                      autofocus: true,
+                      onKeyEvent: (node, event) {
+                        // Only handle keyboard for Reflect tab (feed)
+                        if (_currentNavIndex != 1) return KeyEventResult.ignored;
+                        if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                          if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+                              event.logicalKey == LogicalKeyboardKey.pageDown ||
+                              (event.logicalKey == LogicalKeyboardKey.space &&
+                                  !HardwareKeyboard.instance.isShiftPressed)) {
+                            _animateToRelativePage(1);
+                            return KeyEventResult.handled;
+                          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+                              event.logicalKey == LogicalKeyboardKey.pageUp ||
+                              (event.logicalKey == LogicalKeyboardKey.space &&
+                                  HardwareKeyboard.instance.isShiftPressed)) {
+                            _animateToRelativePage(-1);
+                            return KeyEventResult.handled;
+                          }
+                        }
+                        return KeyEventResult.ignored;
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Top Bar with App Title, Filter Toggle, and Language Selector
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              horizontalPadding,
+                              isVeryShort ? 4.0 : (isShort ? 6.0 : 12.0),
+                              horizontalPadding,
+                              0.0,
+                            ),
+                            child: _buildHeaderBar(
+                              palette,
+                              isShort: isShort,
+                              isVeryShort: isVeryShort,
+                              isNarrow: isNarrow,
+                            ),
+                          ),
+                          SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
+
+                          // "How is your heart today?" mood chips
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                            child: _buildMoodSection(
+                              palette,
+                              isShort: isShort,
+                              isVeryShort: isVeryShort,
+                              isNarrow: isNarrow,
+                              textScale: textScale,
+                            ),
+                          ),
+                          SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
+
+                          // Tab content area
+                          Expanded(
+                            child: _buildTabContent(palette),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
         bottomNavigationBar: _buildBottomNav(
@@ -1538,65 +1564,87 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     );
   }
 
-  /// Contemplative bottom navigation bar occupying the full width of the screen.
+  /// Contemplative floating glass bottom navigation dock with static BackdropFilter blur.
   Widget _buildBottomNav(
     StagePalette palette, {
     bool isShort = false,
     bool isVeryShort = false,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeInOutCubic,
-      decoration: BoxDecoration(
-        color: palette.cardSurface.withValues(alpha: 0.96),
-        border: Border(
-          top: BorderSide(
-            color: palette.cardBorder.withValues(alpha: 0.4),
-            width: 1.0,
+    final isDark = _themeMode == 'dark';
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28.0),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOutCubic,
+              decoration: BoxDecoration(
+                color: palette.cardSurface.withValues(alpha: isDark ? 0.88 : 0.92),
+                borderRadius: BorderRadius.circular(28.0),
+                border: Border.all(
+                  color: palette.cardBorder.withValues(alpha: 0.55),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 16.0,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: palette.accent.withValues(alpha: 0.06),
+                    blurRadius: 24.0,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: _currentNavIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentNavIndex = index;
+                  });
+                },
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                iconSize: isVeryShort ? 18.0 : (isShort ? 20.0 : 24.0),
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: palette.accent,
+                unselectedItemColor: palette.secondaryText.withValues(alpha: 0.75),
+                selectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
+                unselectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
+                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.spa_outlined),
+                    activeIcon: Icon(Icons.spa),
+                    label: 'Today',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.menu_book_outlined),
+                    activeIcon: Icon(Icons.menu_book),
+                    label: 'Reflect',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.edit_note_outlined),
+                    activeIcon: Icon(Icons.edit_note),
+                    label: 'Journal',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.psychology_alt_outlined),
+                    activeIcon: Icon(Icons.psychology_alt),
+                    label: 'Feelings',
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: BottomNavigationBar(
-          currentIndex: _currentNavIndex,
-          onTap: (index) {
-            setState(() {
-              _currentNavIndex = index;
-            });
-          },
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconSize: isVeryShort ? 18.0 : (isShort ? 20.0 : 24.0),
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: palette.accent,
-          unselectedItemColor: palette.secondaryText.withValues(alpha: 0.75),
-          selectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
-          unselectedFontSize: isVeryShort ? 9.0 : (isShort ? 10.0 : 11.0),
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.spa_outlined),
-              activeIcon: Icon(Icons.spa),
-              label: 'Today',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
-              activeIcon: Icon(Icons.menu_book),
-              label: 'Reflect',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.edit_note_outlined),
-              activeIcon: Icon(Icons.edit_note),
-              label: 'Journal',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.psychology_alt_outlined),
-              activeIcon: Icon(Icons.psychology_alt),
-              label: 'Feelings',
-            ),
-          ],
         ),
       ),
     );

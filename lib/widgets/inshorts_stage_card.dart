@@ -3,6 +3,7 @@ import '../models/inshorts_feed_item.dart';
 import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
 import 'aesthetic_share_modal.dart';
+import 'living_audio_bars.dart';
 
 /// An Inshorts-style split stage card blending Scripture passages and inspirational quotes.
 ///
@@ -67,9 +68,15 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 20.0,
                   offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: palette.accent.withValues(alpha: 0.08),
+                  blurRadius: 32.0,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 2.0,
                 ),
               ],
             ),
@@ -253,6 +260,11 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                     curve: Curves.easeInOutCubic,
                     style: TextStyle(
                       fontFamily: 'serif',
+                      fontFamilyFallback: const [
+                        'Cormorant Garamond',
+                        'Noto Sans Devanagari',
+                        'Georgia',
+                      ],
                       fontSize: isVeryShort ? 14.0 : (isShort ? 17.0 : 20.0),
                       height: 1.4,
                       fontWeight: FontWeight.w400,
@@ -261,7 +273,14 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                     ),
                     child: Text(
                       '“${item.mainText}”',
-                      style: const TextStyle(fontFamily: 'serif'),
+                      style: const TextStyle(
+                        fontFamily: 'serif',
+                        fontFamilyFallback: [
+                          'Cormorant Garamond',
+                          'Noto Sans Devanagari',
+                          'Georgia',
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -343,12 +362,84 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Horizontal divider line
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubic,
-          height: 1.0,
-          color: palette.cardBorder.withValues(alpha: 0.55),
+        // Centered sacred glyph ornament line in champagne gold, visible across flanks
+        Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOutCubic,
+                      height: 1.0,
+                      color: palette.cardBorder.withValues(alpha: 0.55),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                    child: Text(
+                      '❖',
+                      style: TextStyle(
+                        fontSize: 9.0,
+                        color: palette.accent.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOutCubic,
+                      height: 1.0,
+                      color: palette.cardBorder.withValues(alpha: 0.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Text(
+                '❖',
+                style: TextStyle(
+                  fontSize: 10.0,
+                  color: palette.accent.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOutCubic,
+                      height: 1.0,
+                      color: palette.cardBorder.withValues(alpha: 0.55),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                    child: Text(
+                      '❖',
+                      style: TextStyle(
+                        fontSize: 9.0,
+                        color: palette.accent.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOutCubic,
+                      height: 1.0,
+                      color: palette.cardBorder.withValues(alpha: 0.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
 
         // Floating action pill
@@ -411,13 +502,18 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                isSpeaking
-                                    ? Icons.volume_up_rounded
-                                    : Icons.volume_mute_outlined,
-                                size: 15.0,
-                                color: isSpeaking ? palette.accent : palette.secondaryText,
-                              ),
+                              if (isSpeaking) ...[
+                                LivingAudioBars(
+                                  color: palette.accent,
+                                  isPlaying: true,
+                                ),
+                              ] else ...[
+                                Icon(
+                                  Icons.volume_mute_outlined,
+                                  size: 15.0,
+                                  color: palette.secondaryText,
+                                ),
+                              ],
                               const SizedBox(width: 4.0),
                               AnimatedDefaultTextStyle(
                                 duration: const Duration(milliseconds: 600),

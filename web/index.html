@@ -27,10 +27,59 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Theme Color -->
-  <meta name="theme-color" content="#181E2C">
+  <meta name="theme-color" content="#0D111A">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Sacred Cathedral Typography Mapping (Zero-FOUT & Test-Safe) */
+    @font-face {
+      font-family: 'serif';
+      font-weight: 400;
+      src: local('Cormorant Garamond Regular'), local('Cormorant Garamond'), local('CormorantGaramond'),
+           url('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_v86GnM.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'serif';
+      font-weight: 500;
+      src: local('Cormorant Garamond Medium'),
+           url('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_s06GnM.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'serif';
+      font-weight: 600;
+      src: local('Cormorant Garamond SemiBold'), local('CormorantGaramond-SemiBold'),
+           url('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_iE9GnM.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'serif';
+      font-weight: 700;
+      src: local('Cormorant Garamond Bold'), local('CormorantGaramond-Bold'),
+           url('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_h0-GnM.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'serif';
+      font-style: italic;
+      font-weight: 400;
+      src: local('Cormorant Garamond Italic'), local('CormorantGaramond-Italic'),
+           url('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd58jDOjw.ttf') format('truetype');
+    }
+
+    /* Force Cormorant Garamond across root and Flutter inline style attributes */
+    :root, body, html,
+    [style*="font-family: serif"],
+    [style*="font-family:serif"],
+    [style*='font-family: "serif"'],
+    [style*="font-family: 'serif'"] {
+      font-family: 'Cormorant Garamond', Georgia, serif !important;
+    }
+  </style>
 
   <title>Grace & Growth - Daily Sanctuary</title>
   <link rel="manifest" href="manifest.json">
