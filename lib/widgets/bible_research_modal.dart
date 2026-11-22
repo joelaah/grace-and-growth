@@ -154,6 +154,8 @@ class BibleResearchModal extends StatelessWidget {
                       children: [
                         Text(
                           'Bible Research & Study',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontFamily: 'serif',
                             fontSize: 17.0,
@@ -163,6 +165,8 @@ class BibleResearchModal extends StatelessWidget {
                         ),
                         Text(
                           'Spreading the Gospel through Living Word',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 11.0,
                             color: palette.secondaryText,
@@ -182,7 +186,7 @@ class BibleResearchModal extends StatelessWidget {
             const Divider(height: 1.0),
 
             // Scrollable content
-            Flexible(
+            Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.all(20.0),
@@ -325,12 +329,15 @@ class BibleResearchModal extends StatelessWidget {
                           Navigator.of(context).pop();
                         },
                         icon: const Icon(Icons.send_rounded, size: 16.0),
-                        label: const Text(
-                          'Spread This Gospel Verse',
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3,
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Spread This Gospel Verse',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
                           ),
                         ),
                         style: ElevatedButton.styleFrom(

@@ -46,10 +46,12 @@ class ShareableCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Top Row: Source badge and mood label
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,27 +95,32 @@ class ShareableCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8.0),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7.0,
-                    height: 7.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: palette.accent,
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7.0,
+                      height: 7.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: palette.accent,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 5.0),
-                  Text(
-                    palette.stageLabel,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: palette.secondaryText,
+                    const SizedBox(width: 5.0),
+                    Flexible(
+                      child: Text(
+                        palette.stageLabel,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: palette.secondaryText,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -179,14 +186,17 @@ class ShareableCard extends StatelessWidget {
                 color: palette.accent,
               ),
               const SizedBox(width: 6.0),
-              Text(
-                'Grace & Growth',
-                style: TextStyle(
-                  fontFamily: 'serif',
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.w600,
-                  color: palette.primaryText.withValues(alpha: 0.9),
-                  letterSpacing: 0.3,
+              Flexible(
+                child: Text(
+                  'Grace & Growth',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w600,
+                    color: palette.primaryText.withValues(alpha: 0.9),
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
               const SizedBox(width: 4.0),
@@ -205,7 +215,8 @@ class ShareableCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   /// Utility method to share the card either as an image or formatted text fallback.

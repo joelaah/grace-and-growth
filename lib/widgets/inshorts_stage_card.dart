@@ -46,7 +46,7 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
         final cardHeight = constraints.maxHeight;
         final textScale = MediaQuery.textScalerOf(context).scale(1.0);
         final isShort = cardHeight < 440 || textScale > 1.25;
-        final isVeryShort = cardHeight < 340 || (cardHeight < 400 && textScale > 1.25);
+        final isVeryShort = cardHeight < 400 || (cardHeight < 500 && textScale > 1.25);
         final isNarrow = constraints.maxWidth < 320 || textScale > 1.25;
         final isWide = constraints.maxWidth >= 720;
 
@@ -57,7 +57,7 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
             curve: Curves.easeInOutCubic,
             margin: EdgeInsets.symmetric(
               horizontal: isNarrow ? 8.0 : (isWide ? 24.0 : 16.0),
-              vertical: isShort ? 4.0 : 8.0,
+              vertical: isVeryShort ? 2.0 : (isShort ? 4.0 : 8.0),
             ),
             decoration: BoxDecoration(
               color: palette.cardSurface,
@@ -135,9 +135,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
       curve: Curves.easeInOutCubic,
       padding: EdgeInsets.fromLTRB(
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
-        isVeryShort ? 6.0 : (isShort ? 10.0 : 18.0),
+        isVeryShort ? 4.0 : (isShort ? 10.0 : 18.0),
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
-        isVeryShort ? 4.0 : (isShort ? 6.0 : 10.0),
+        isVeryShort ? 2.0 : (isShort ? 6.0 : 10.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,7 +246,7 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
             ],
           ),
 
-          SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 12.0)),
+          SizedBox(height: isVeryShort ? 2.0 : (isShort ? 6.0 : 12.0)),
 
           // Main quote/verse text in editorial serif font
           Expanded(
@@ -288,7 +288,7 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
             ),
           ),
 
-          SizedBox(height: isVeryShort ? 3.0 : (isShort ? 6.0 : 10.0)),
+          SizedBox(height: isVeryShort ? 2.0 : (isShort ? 6.0 : 10.0)),
 
           // Reference / Author & SubTag row
           Row(
@@ -697,9 +697,9 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
       color: palette.cardSurface.withValues(alpha: 0.7),
       padding: EdgeInsets.fromLTRB(
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
-        isVeryShort ? 5.0 : (isShort ? 8.0 : 14.0),
+        isVeryShort ? 4.0 : (isShort ? 8.0 : 14.0),
         isNarrow ? 12.0 : (isWide ? 28.0 : 20.0),
-        isVeryShort ? 3.0 : (isShort ? 4.0 : 8.0),
+        isVeryShort ? 2.0 : (isShort ? 4.0 : 8.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -824,37 +824,38 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
             ),
           ),
 
-          // Subtle "Swipe up for next" indicator at the bottom
-          Center(
-            child: Padding(
-              padding: EdgeInsets.only(top: isShort ? 1.0 : 2.0),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.keyboard_arrow_up_rounded,
-                      size: isVeryShort ? 14.0 : 16.0,
-                      color: palette.secondaryText.withValues(alpha: 0.55),
-                    ),
-                    const SizedBox(width: 2.0),
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 600),
-                      curve: Curves.easeInOutCubic,
-                      style: TextStyle(
-                        fontSize: isVeryShort ? 9.5 : 10.5,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.4,
+          // Subtle "Swipe up for next" indicator at the bottom (omitted on very short viewports)
+          if (!isVeryShort)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: isShort ? 1.0 : 2.0),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.keyboard_arrow_up_rounded,
+                        size: 16.0,
                         color: palette.secondaryText.withValues(alpha: 0.55),
                       ),
-                      child: const Text('Swipe up for next'),
-                    ),
-                  ],
+                      const SizedBox(width: 2.0),
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.4,
+                          color: palette.secondaryText.withValues(alpha: 0.55),
+                        ),
+                        child: const Text('Swipe up for next'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

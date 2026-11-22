@@ -277,86 +277,98 @@ class _MysteryBoxModalState extends State<MysteryBoxModal>
 
   /// State 1: Sealed state with a breathing/glowing pulse animation.
   Widget _buildSealedState(StagePalette palette) {
-    return SizedBox.expand(
-      child: GestureDetector(
-        onTap: _unseal,
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Gently breathing glowing sealed icon
-                AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    final pulseVal = _pulseController.value;
-                    final scale = 0.96 + (pulseVal * 0.08);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxHeight < 550;
+        final iconSize = isCompact ? 72.0 : 116.0;
+        final innerIconSize = isCompact ? 32.0 : 50.0;
+        final spacing = isCompact ? 16.0 : 28.0;
 
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: 116.0,
-                        height: 116.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: palette.accent.withValues(alpha: 0.12 + (pulseVal * 0.08)),
-                          border: Border.all(
-                            color: palette.accent.withValues(alpha: 0.45 + (pulseVal * 0.25)),
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: palette.accent.withValues(alpha: 0.2 + (pulseVal * 0.2)),
-                              blurRadius: 18.0 + (pulseVal * 14.0),
-                              spreadRadius: 2.0 + (pulseVal * 4.0),
+        return SizedBox.expand(
+          child: GestureDetector(
+            onTap: _unseal,
+            behavior: HitTestBehavior.opaque,
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Gently breathing glowing sealed icon
+                      AnimatedBuilder(
+                        animation: _pulseController,
+                        builder: (context, child) {
+                          final pulseVal = _pulseController.value;
+                          final scale = 0.96 + (pulseVal * 0.08);
+
+                          return Transform.scale(
+                            scale: scale,
+                            child: Container(
+                              width: iconSize,
+                              height: iconSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: palette.accent.withValues(alpha: 0.12 + (pulseVal * 0.08)),
+                                border: Border.all(
+                                  color: palette.accent.withValues(alpha: 0.45 + (pulseVal * 0.25)),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: palette.accent.withValues(alpha: 0.2 + (pulseVal * 0.2)),
+                                    blurRadius: 18.0 + (pulseVal * 14.0),
+                                    spreadRadius: 2.0 + (pulseVal * 4.0),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: innerIconSize,
+                                  color: palette.accent,
+                                ),
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.inventory_2_outlined,
-                            size: 50.0,
-                            color: palette.accent,
-                          ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: spacing),
+
+                      // Title
+                      Text(
+                        'Something for your heart today',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: isCompact ? 18.0 : 21.0,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                          color: palette.primaryText,
                         ),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 28.0),
+                      const SizedBox(height: 10.0),
 
-                // Title
-                Text(
-                  'Something for your heart today',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'serif',
-                    fontSize: 21.0,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
-                    color: palette.primaryText,
+                      // Subtitle / Tap prompt
+                      Text(
+                        _isLoadingItem ? 'Unsealing...' : 'Tap to unseal',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.6,
+                          color: palette.accent,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 10.0),
-
-                // Subtitle / Tap prompt
-                Text(
-                  _isLoadingItem ? 'Unsealing...' : 'Tap to unseal',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.6,
-                    color: palette.accent,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

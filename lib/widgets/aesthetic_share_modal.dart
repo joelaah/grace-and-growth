@@ -195,7 +195,7 @@ class _AestheticShareModalState extends State<AestheticShareModal> {
     final palette = _selectedPalette;
 
     return Container(
-      height: modalHeight,
+      constraints: BoxConstraints(maxHeight: modalHeight),
       decoration: BoxDecoration(
         color: palette.cardSurface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
@@ -213,190 +213,208 @@ class _AestheticShareModalState extends State<AestheticShareModal> {
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 10.0, bottom: 8.0),
-                width: 38.0,
-                height: 4.5,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10.0, bottom: 8.0),
+                  width: 38.0,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: palette.secondaryText.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+              ),
+
+              // Header with theme toggle
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: palette.accent.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(
+                          color: palette.accent.withValues(alpha: 0.35),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.palette_outlined,
+                        size: 20.0,
+                        color: palette.accent,
+                      ),
+                    ),
+                    const SizedBox(width: 12.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Aesthetic Card Sharing',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w600,
+                              color: palette.primaryText,
+                            ),
+                          ),
+                          Text(
+                            'Select sanctuary theme & share the Word',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11.0,
+                              color: palette.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, size: 20.0, color: palette.secondaryText),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Theme selector pills
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
+                child: Row(
+                  children: [
+                    _buildThemeOption(
+                      label: 'Sanctuary Twilight',
+                      isDark: true,
+                      isSelected: _selectedPalette.isDarkPalette,
+                    ),
+                    const SizedBox(width: 8.0),
+                    _buildThemeOption(
+                      label: 'Sacred Scripture',
+                      isDark: false,
+                      isSelected: !_selectedPalette.isDarkPalette,
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 16.0),
+
+              // Card Preview Area
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: 380.0,
+                      maxHeight: isShort ? 280.0 : 400.0,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SizedBox(
+                        width: 380.0,
+                        child: RepaintBoundary(
+                          key: _previewBoundaryKey,
+                          child: ShareableCard(
+                            item: widget.item,
+                            palette: _selectedPalette,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Bottom action buttons
+              Container(
+                padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 16.0),
                 decoration: BoxDecoration(
-                  color: palette.secondaryText.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
-            ),
-
-            // Header with theme toggle
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: palette.accent.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(12.0),
-                      border: Border.all(
-                        color: palette.accent.withValues(alpha: 0.35),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.palette_outlined,
-                      size: 20.0,
-                      color: palette.accent,
+                  color: palette.cardSurface,
+                  border: Border(
+                    top: BorderSide(
+                      color: palette.cardBorder.withValues(alpha: 0.4),
+                      width: 0.8,
                     ),
                   ),
-                  const SizedBox(width: 12.0),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Aesthetic Card Sharing',
-                          style: TextStyle(
-                            fontFamily: 'serif',
-                            fontSize: 17.0,
-                            fontWeight: FontWeight.w600,
-                            color: palette.primaryText,
+                ),
+                child: Row(
+                  children: [
+                    // Copy text button
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isProcessing ? null : _copyTextOnly,
+                        icon: const Icon(Icons.copy_rounded, size: 16.0),
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Copy Text',
+                            style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w600),
                           ),
                         ),
-                        Text(
-                          'Select sanctuary theme & share the Word',
-                          style: TextStyle(
-                            fontSize: 11.0,
-                            color: palette.secondaryText,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: palette.primaryText,
+                          side: BorderSide(color: palette.cardBorder),
+                          padding: const EdgeInsets.symmetric(vertical: 13.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.0),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close_rounded, size: 20.0, color: palette.secondaryText),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-
-            // Theme selector pills
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
-              child: Row(
-                children: [
-                  _buildThemeOption(
-                    label: 'Sanctuary Twilight',
-                    isDark: true,
-                    isSelected: _selectedPalette.isDarkPalette,
-                  ),
-                  const SizedBox(width: 8.0),
-                  _buildThemeOption(
-                    label: 'Sacred Scripture',
-                    isDark: false,
-                    isSelected: !_selectedPalette.isDarkPalette,
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(height: 16.0),
-
-            // Card Preview Area
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: SizedBox(
-                      width: 380.0,
-                      child: RepaintBoundary(
-                        key: _previewBoundaryKey,
-                        child: ShareableCard(
-                          item: widget.item,
-                          palette: _selectedPalette,
+                    const SizedBox(width: 12.0),
+                    // Export / Share image button
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: _isProcessing ? null : _shareCardImage,
+                        icon: _isProcessing
+                            ? const SizedBox(
+                                width: 16.0,
+                                height: 16.0,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.share_rounded, size: 16.0),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            kIsWeb ? 'Download & Share Card' : 'Share Devotional Card',
+                            style: const TextStyle(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: palette.accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.0),
+                          ),
+                          elevation: 2.0,
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ),
-
-            // Bottom action buttons
-            Container(
-              padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 16.0),
-              decoration: BoxDecoration(
-                color: palette.cardSurface,
-                border: Border(
-                  top: BorderSide(
-                    color: palette.cardBorder.withValues(alpha: 0.4),
-                    width: 0.8,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Copy text button
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _isProcessing ? null : _copyTextOnly,
-                      icon: const Icon(Icons.copy_rounded, size: 16.0),
-                      label: const Text(
-                        'Copy Text',
-                        style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: palette.primaryText,
-                        side: BorderSide(color: palette.cardBorder),
-                        padding: const EdgeInsets.symmetric(vertical: 13.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.0),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12.0),
-                  // Export / Share image button
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: _isProcessing ? null : _shareCardImage,
-                      icon: _isProcessing
-                          ? const SizedBox(
-                              width: 16.0,
-                              height: 16.0,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(Icons.share_rounded, size: 16.0),
-                      label: Text(
-                        kIsWeb ? 'Download & Share Card' : 'Share Devotional Card',
-                        style: const TextStyle(
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: palette.accent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.0),
-                        ),
-                        elevation: 2.0,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

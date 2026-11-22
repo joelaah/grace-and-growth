@@ -123,25 +123,31 @@ class _TodayScreenState extends State<TodayScreen> {
                     ),
                   ),
                   const SizedBox(width: 8.0),
-                  InkWell(
-                    onTap: () => NotificationTimePickerModal.show(context, palette),
-                    borderRadius: BorderRadius.circular(16.0),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
-                          const SizedBox(width: 4.0),
-                          Text(
-                            'Reminder',
-                            style: TextStyle(
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.w500,
-                              color: palette.secondaryText,
-                            ),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: InkWell(
+                        onTap: () => NotificationTimePickerModal.show(context, palette),
+                        borderRadius: BorderRadius.circular(16.0),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.notifications_none_rounded, size: 15.0, color: palette.accent),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                'Reminder',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: palette.secondaryText,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -356,27 +362,31 @@ class _TodayScreenState extends State<TodayScreen> {
               color: palette.accent.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  item.isVerse
-                      ? Icons.auto_stories_outlined
-                      : Icons.format_quote_rounded,
-                  size: 12,
-                  color: palette.accent,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  item.sourceBadge,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    item.isVerse
+                        ? Icons.auto_stories_outlined
+                        : Icons.format_quote_rounded,
+                    size: 12,
                     color: palette.accent,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    item.sourceBadge,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: palette.accent,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 14),
@@ -397,6 +407,8 @@ class _TodayScreenState extends State<TodayScreen> {
               Expanded(
                 child: Text(
                   item.attribution,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,

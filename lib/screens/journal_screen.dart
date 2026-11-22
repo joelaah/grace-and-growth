@@ -66,36 +66,39 @@ class _JournalScreenState extends State<JournalScreen> {
 
     if (savedItems.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.spa_outlined,
-                size: 48,
-                color: palette.secondaryText.withValues(alpha: 0.4),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Your journal is empty',
-                style: TextStyle(
-                  fontFamily: 'serif',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: palette.primaryText,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.spa_outlined,
+                  size: 48,
+                  color: palette.secondaryText.withValues(alpha: 0.4),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Save verses and quotes from the feed to begin.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: palette.secondaryText,
+                const SizedBox(height: 16),
+                Text(
+                  'Your journal is empty',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: palette.primaryText,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  'Save verses and quotes from the feed to begin.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: palette.secondaryText,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -145,51 +148,67 @@ class _JournalScreenState extends State<JournalScreen> {
             // Source badge + mood dot
             Row(
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: stagePalette.accent.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        item.isVerse
-                            ? Icons.auto_stories_outlined
-                            : Icons.format_quote_rounded,
-                        size: 11,
-                        color: stagePalette.accent,
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: stagePalette.accent.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(width: 3),
-                      Text(
-                        item.sourceBadge,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                          color: stagePalette.accent,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item.isVerse
+                                ? Icons.auto_stories_outlined
+                                : Icons.format_quote_rounded,
+                            size: 11,
+                            color: stagePalette.accent,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            item.sourceBadge,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: stagePalette.accent,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 const Spacer(),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: stagePalette.accent,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  stagePalette.stageLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: palette.secondaryText,
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: stagePalette.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          stagePalette.stageLabel,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: palette.secondaryText,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -316,13 +335,17 @@ class _JournalScreenState extends State<JournalScreen> {
                       color: stagePalette.accent.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      item.sourceBadge,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                        color: stagePalette.accent,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.sourceBadge,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: stagePalette.accent,
+                        ),
                       ),
                     ),
                   ),
@@ -405,7 +428,10 @@ class _JournalScreenState extends State<JournalScreen> {
                             if (context.mounted) Navigator.pop(context);
                           },
                           icon: const Icon(Icons.check_rounded, size: 18),
-                          label: const Text('Save'),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Save'),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: palette.accent,
                             foregroundColor: Colors.white,
@@ -420,24 +446,29 @@ class _JournalScreenState extends State<JournalScreen> {
                       ),
                       const SizedBox(width: 10),
                       // Delete
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          await _storage.deleteEntry(item.id);
-                          widget.onBookmarkToggle?.call(item.id);
-                          await _loadNotes();
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                        label: const Text('Remove'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              palette.secondaryText.withValues(alpha: 0.12),
-                          foregroundColor: palette.secondaryText,
-                          elevation: 0,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await _storage.deleteEntry(item.id);
+                            widget.onBookmarkToggle?.call(item.id);
+                            await _loadNotes();
+                            if (context.mounted) Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.delete_outline, size: 18),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Remove'),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                palette.secondaryText.withValues(alpha: 0.12),
+                            foregroundColor: palette.secondaryText,
+                            elevation: 0,
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                         ),
                       ),
@@ -456,7 +487,10 @@ class _JournalScreenState extends State<JournalScreen> {
                           );
                         },
                         icon: const Icon(Icons.auto_stories_rounded, size: 16),
-                        label: const Text('Bible Research & Study'),
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('Bible Research & Study'),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: palette.primaryText,
                           side: BorderSide(
@@ -521,7 +555,10 @@ class _JournalScreenState extends State<JournalScreen> {
                         }
                       },
                       icon: const Icon(Icons.diversity_3_outlined, size: 16),
-                      label: const Text('Share Anonymously with Community'),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Share Anonymously with Community'),
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: stagePalette.accent,
                         side: BorderSide(
