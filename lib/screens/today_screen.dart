@@ -7,6 +7,7 @@ import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
 import '../utils/daily_selection_engine.dart';
 import '../widgets/aesthetic_share_modal.dart';
+import '../widgets/audio_sanctum_settings_modal.dart';
 import '../widgets/bible_research_modal.dart';
 import '../widgets/contemplation_timer.dart';
 import '../widgets/notification_time_picker.dart';
@@ -481,6 +482,7 @@ class _TodayScreenState extends State<TodayScreen> {
                         text: item.mainText,
                         langCode: widget.langCode,
                         englishFallbackText: englishFallback,
+                        attribution: item.attribution,
                         onNotice: (notice) {
                           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                             SnackBar(
@@ -503,6 +505,19 @@ class _TodayScreenState extends State<TodayScreen> {
                     ),
                   );
                 },
+              ),
+              // Audio Sanctum Settings
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => AudioSanctumSettingsModal.show(context, palette: palette),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    size: 18,
+                    color: palette.secondaryText,
+                  ),
+                ),
               ),
               // Research (if verse)
               if (item.isVerse)

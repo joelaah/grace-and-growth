@@ -4,6 +4,7 @@ import '../models/inshorts_feed_item.dart';
 import '../services/tts_service.dart';
 import '../theme/mood_stage_theme.dart';
 import 'aesthetic_share_modal.dart';
+import 'audio_sanctum_settings_modal.dart';
 import 'living_audio_bars.dart';
 
 /// An Inshorts-style split stage card blending Scripture passages and inspirational quotes.
@@ -270,74 +271,104 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
 
           const SizedBox(height: 16.0),
 
-          // Bottom: Living Audio player dock
+          // Bottom: Living Audio player dock & Audio Sanctum Settings
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: ValueListenableBuilder<String?>(
-              valueListenable: TtsService().currentlySpeakingId,
-              builder: (context, speakingId, _) {
-                final isSpeaking = speakingId == item.id;
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(24.0),
-                    onTap: () {
-                      String? englishFallback;
-                      if (widget.langCode == 'lus') {
-                        englishFallback = item.taggedVerse?.textFor('eng') ??
-                            item.quote?.quote;
-                      }
-                      TtsService().speak(
-                        id: item.id,
-                        text: item.mainText,
-                        langCode: widget.langCode,
-                        englishFallbackText: englishFallback,
-                        onNotice: (notice) {
-                          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                            SnackBar(
-                              content: Text(notice),
-                              behavior: SnackBarBehavior.floating,
-                            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ValueListenableBuilder<String?>(
+                  valueListenable: TtsService().currentlySpeakingId,
+                  builder: (context, speakingId, _) {
+                    final isSpeaking = speakingId == item.id;
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24.0),
+                        onTap: () {
+                          String? englishFallback;
+                          if (widget.langCode == 'lus') {
+                            englishFallback = item.taggedVerse?.textFor('eng') ??
+                                item.quote?.quote;
+                          }
+                          TtsService().speak(
+                            id: item.id,
+                            text: item.mainText,
+                            langCode: widget.langCode,
+                            englishFallbackText: englishFallback,
+                            attribution: item.attribution,
+                            onNotice: (notice) {
+                              ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                                SnackBar(
+                                  content: Text(notice),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
                           );
                         },
-                      );
-                    },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          decoration: BoxDecoration(
+                            color: palette.accent.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(24.0),
+                            border: Border.all(
+                              color: palette.accent.withValues(alpha: 0.35),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isSpeaking ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                                size: 20.0,
+                                color: palette.accent,
+                              ),
+                              const SizedBox(width: 8.0),
+                              LivingAudioBars(color: palette.accent, isPlaying: isSpeaking),
+                              const SizedBox(width: 8.0),
+                              Text(
+                                isSpeaking ? 'Pause Audio Sanctum' : 'Listen with Audio Sanctum',
+                                style: TextStyle(
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSpeaking ? palette.accent : palette.primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8.0),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20.0),
+                    onTap: () => AudioSanctumSettingsModal.show(context, palette: palette),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      padding: const EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: palette.accent.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(24.0),
+                        shape: BoxShape.circle,
                         border: Border.all(
                           color: palette.accent.withValues(alpha: 0.35),
                           width: 1.0,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isSpeaking ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                            size: 20.0,
-                            color: palette.accent,
-                          ),
-                          const SizedBox(width: 8.0),
-                          LivingAudioBars(color: palette.accent, isPlaying: isSpeaking),
-                          const SizedBox(width: 8.0),
-                          Text(
-                            isSpeaking ? 'Pause Audio Sanctum' : 'Listen with Audio Sanctum',
-                            style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.w600,
-                              color: isSpeaking ? palette.accent : palette.primaryText,
-                            ),
-                          ),
-                        ],
+                      child: Icon(
+                        Icons.tune_rounded,
+                        size: 18.0,
+                        color: palette.accent,
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
         ],
@@ -1110,6 +1141,7 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                         text: item.mainText,
                         langCode: widget.langCode,
                         englishFallbackText: englishFallback,
+                        attribution: item.attribution,
                         onNotice: (notice) {
                           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                             SnackBar(
@@ -1156,6 +1188,23 @@ class _InshortsStageCardState extends State<InshortsStageCard> {
                             ],
                           );
                         },
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Audio Sanctum tune settings button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => AudioSanctumSettingsModal.show(context, palette: palette),
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+                      child: Icon(
+                        Icons.tune_rounded,
+                        size: 14.0,
+                        color: palette.secondaryText,
                       ),
                     ),
                   ),

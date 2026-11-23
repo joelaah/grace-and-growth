@@ -150,6 +150,146 @@
       });
     }
   </script>
+
+  <!-- Audio Sanctum Ambient Cathedral Pad Synthesizer (Pure Web Audio API) -->
+  <script>
+    (function() {
+      var audioCtx = null;
+      var masterGain = null;
+      var filterNode = null;
+      var activeOscillators = [];
+      var isPlaying = false;
+
+      function getAudioContext() {
+        if (!audioCtx) {
+          var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        return audioCtx;
+      }
+
+      window.SanctumAudio = {
+        isPlaying: function() {
+          return isPlaying;
+        },
+        startPad: function(volume) {
+          try {
+            var targetVol = (typeof volume === 'number' && volume > 0) ? volume : 0.07;
+            var ctx = getAudioContext();
+            if (!ctx) return;
+
+            if (ctx.state === 'suspended') {
+              ctx.resume();
+            }
+
+            var now = ctx.currentTime;
+            if (isPlaying && masterGain) {
+              masterGain.gain.cancelScheduledValues(now);
+              masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), now);
+              masterGain.gain.exponentialRampToValueAtTime(targetVol, now + 1.2);
+              return;
+            }
+
+            // Clean up any lingering oscillators
+            window.SanctumAudio.stopPad(false);
+
+            // Master Gain Node with gentle exponential attack
+            masterGain = ctx.createGain();
+            now = ctx.currentTime;
+            masterGain.gain.setValueAtTime(0.0001, now);
+            masterGain.gain.exponentialRampToValueAtTime(targetVol, now + 1.8);
+            masterGain.connect(ctx.destination);
+
+            // Cathedral Low-pass Biquad Filter (320Hz)
+            filterNode = ctx.createBiquadFilter();
+            filterNode.type = 'lowpass';
+            filterNode.frequency.setValueAtTime(320, now);
+            filterNode.Q.setValueAtTime(1.0, now);
+            filterNode.connect(masterGain);
+
+            // Sacred Cathedral Pad Chord: Warm A-minor / C-major contemplative harmonics
+            // Notes: A2 (110.00Hz), C3 (130.81Hz), E3 (164.81Hz), A3 (220.00Hz), C4 (261.63Hz), E4 (329.63Hz)
+            var notes = [
+              { freq: 110.00, detune: -4, type: 'triangle', gain: 0.35 },
+              { freq: 110.00, detune: 4, type: 'sawtooth', gain: 0.15 },
+              { freq: 130.81, detune: -3, type: 'triangle', gain: 0.30 },
+              { freq: 164.81, detune: 2, type: 'sawtooth', gain: 0.18 },
+              { freq: 220.00, detune: -2, type: 'triangle', gain: 0.25 },
+              { freq: 261.63, detune: 3, type: 'sine', gain: 0.30 },
+              { freq: 329.63, detune: -3, type: 'sine', gain: 0.20 }
+            ];
+
+            activeOscillators = [];
+            notes.forEach(function(note) {
+              var osc = ctx.createOscillator();
+              var noteGain = ctx.createGain();
+              noteGain.gain.value = note.gain;
+              osc.type = note.type;
+              osc.frequency.setValueAtTime(note.freq, now);
+              osc.detune.setValueAtTime(note.detune, now);
+              osc.connect(noteGain);
+              noteGain.connect(filterNode);
+              osc.start(now);
+              activeOscillators.push(osc);
+            });
+
+            isPlaying = true;
+          } catch (e) {
+            console.warn('SanctumAudio startPad error:', e);
+          }
+        },
+        stopPad: function(smooth) {
+          try {
+            var ctx = audioCtx;
+            if (!ctx) return;
+            var isSmooth = smooth !== false;
+            var now = ctx.currentTime;
+            var currentMaster = masterGain;
+            var oscs = activeOscillators;
+            activeOscillators = [];
+            isPlaying = false;
+
+            if (currentMaster) {
+              currentMaster.gain.cancelScheduledValues(now);
+              currentMaster.gain.setValueAtTime(Math.max(currentMaster.gain.value, 0.0001), now);
+              if (isSmooth) {
+                currentMaster.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+                setTimeout(function() {
+                  oscs.forEach(function(osc) {
+                    try { osc.stop(); osc.disconnect(); } catch (_) {}
+                  });
+                  try { currentMaster.disconnect(); } catch (_) {}
+                }, 1300);
+              } else {
+                currentMaster.gain.setValueAtTime(0.0001, now);
+                oscs.forEach(function(osc) {
+                  try { osc.stop(); osc.disconnect(); } catch (_) {}
+                });
+                try { currentMaster.disconnect(); } catch (_) {}
+              }
+            }
+          } catch (e) {
+            console.warn('SanctumAudio stopPad error:', e);
+          }
+        }
+      };
+
+      // Automatically handle AudioContext suspension and resume on user gesture
+      function unlockAudio() {
+        try {
+          var ctx = getAudioContext();
+          if (ctx && ctx.state === 'suspended') {
+            ctx.resume();
+          }
+        } catch (_) {}
+      }
+      window.addEventListener('click', unlockAudio);
+      window.addEventListener('touchstart', unlockAudio);
+      window.addEventListener('keydown', unlockAudio);
+    })();
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
