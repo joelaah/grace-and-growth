@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/mood_stage_theme.dart';
@@ -136,26 +137,41 @@ class QuoteApiService {
       }
     }
 
-    // 2. Try Primary API (ZenQuotes)
-    try {
-      final quotes = await _fetchZenQuotes();
-      if (quotes.isNotEmpty) {
-        await _saveQuotesToCache(prefs, quotes);
-        return quotes;
+    // On Web, ZenQuotes rejects direct browser fetches without CORS headers (causing console ERR_FAILED).
+    // DummyJSON supports open CORS (Access-Control-Allow-Origin: *).
+    if (kIsWeb) {
+      // 2a. On Web: Try Fallback API first (DummyJSON) with CORS support
+      try {
+        final quotes = await _fetchDummyJsonQuotes();
+        if (quotes.isNotEmpty) {
+          await _saveQuotesToCache(prefs, quotes);
+          return quotes;
+        }
+      } catch (_) {
+        // Fallback API failed on web
       }
-    } catch (_) {
-      // Primary API failed, fall through to fallback
-    }
+    } else {
+      // 2b. On Native: Try Primary API (ZenQuotes)
+      try {
+        final quotes = await _fetchZenQuotes();
+        if (quotes.isNotEmpty) {
+          await _saveQuotesToCache(prefs, quotes);
+          return quotes;
+        }
+      } catch (_) {
+        // Primary API failed, fall through to fallback
+      }
 
-    // 3. Try Fallback API (DummyJSON)
-    try {
-      final quotes = await _fetchDummyJsonQuotes();
-      if (quotes.isNotEmpty) {
-        await _saveQuotesToCache(prefs, quotes);
-        return quotes;
+      // 3b. Try Fallback API (DummyJSON)
+      try {
+        final quotes = await _fetchDummyJsonQuotes();
+        if (quotes.isNotEmpty) {
+          await _saveQuotesToCache(prefs, quotes);
+          return quotes;
+        }
+      } catch (_) {
+        // Fallback API failed
       }
-    } catch (_) {
-      // Fallback API failed
     }
 
     // 4. Return cached quotes if available

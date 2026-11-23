@@ -159,6 +159,44 @@ class HomeStageScreenState extends State<HomeStageScreen> {
     // Asynchronously fetch fresh quotes from cache/API in background
     _initializeFeed();
     _loadThemePreference();
+    _loadSavedBookmarks();
+  }
+
+  /// Loads persisted bookmarks from local storage.
+  Future<void> _loadSavedBookmarks() async {
+    try {
+      final savedIds = await _journalStorage.getSavedCardIds();
+      if (mounted && savedIds.isNotEmpty) {
+        setState(() {
+          _bookmarkedIds.addAll(savedIds);
+        });
+      }
+    } catch (_) {}
+  }
+
+  /// Persistently toggles bookmark for [cardId].
+  void _toggleBookmark(String cardId) {
+    final wasSaved = _bookmarkedIds.contains(cardId);
+    setState(() {
+      if (wasSaved) {
+        _bookmarkedIds.remove(cardId);
+      } else {
+        _bookmarkedIds.add(cardId);
+      }
+    });
+
+    final message = !wasSaved
+        ? 'Saved to your quiet sanctuary'
+        : 'Removed from saved moments';
+    _showGentleNotice(message, currentPalette);
+
+    try {
+      if (wasSaved) {
+        _journalStorage.unsaveCardId(cardId);
+      } else {
+        _journalStorage.saveCardId(cardId);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -639,18 +677,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                             final currentIdx = _pageController.page?.round() ?? _pageController.initialPage;
                             if (currentIdx >= 0 && currentIdx < _displayedItems.length) {
                               final item = _displayedItems[currentIdx];
-                              final wasSaved = _bookmarkedIds.contains(item.id);
-                              setState(() {
-                                if (wasSaved) {
-                                  _bookmarkedIds.remove(item.id);
-                                } else {
-                                  _bookmarkedIds.add(item.id);
-                                }
-                              });
-                              final message = !wasSaved
-                                  ? 'Saved to your quiet sanctuary'
-                                  : 'Removed from saved moments';
-                              _showGentleNotice(message, palette);
+                              _toggleBookmark(item.id);
                               return KeyEventResult.handled;
                             }
                           } else if (event.logicalKey == LogicalKeyboardKey.keyR && _displayedItems.isNotEmpty) {
@@ -763,15 +790,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           langCode: _selectedLanguage,
           bookmarkedIds: _bookmarkedIds,
           isWideScreen: isWideScreen,
-          onBookmarkToggle: (id) {
-            setState(() {
-              if (_bookmarkedIds.contains(id)) {
-                _bookmarkedIds.remove(id);
-              } else {
-                _bookmarkedIds.add(id);
-              }
-            });
-          },
+          onBookmarkToggle: (id) => _toggleBookmark(id),
         );
       case 2:
         return JournalScreen(
@@ -780,9 +799,10 @@ class HomeStageScreenState extends State<HomeStageScreen> {
           bookmarkedIds: _bookmarkedIds,
           journalStorage: _journalStorage,
           isWideScreen: isWideScreen,
-          onBookmarkToggle: (id) {
+          onBookmarkToggle: (id) => _toggleBookmark(id),
+          onExploreFeed: () {
             setState(() {
-              _bookmarkedIds.remove(id);
+              _currentNavIndex = 1;
             });
           },
         );
@@ -882,20 +902,7 @@ class HomeStageScreenState extends State<HomeStageScreen> {
                         palette: palette,
                         isBookmarked: isBookmarked,
                         langCode: _selectedLanguage,
-                        onBookmarkToggle: () {
-                          final wasSaved = _bookmarkedIds.contains(item.id);
-                          setState(() {
-                            if (wasSaved) {
-                              _bookmarkedIds.remove(item.id);
-                            } else {
-                              _bookmarkedIds.add(item.id);
-                            }
-                          });
-                          final message = !wasSaved
-                              ? 'Saved to your quiet sanctuary'
-                              : 'Removed from saved moments';
-                          _showGentleNotice(message, palette);
-                        },
+                        onBookmarkToggle: () => _toggleBookmark(item.id),
                         onShare: () {
                           _showGentleNotice(
                             'Copied to share gentle comfort',
@@ -1006,72 +1013,57 @@ class HomeStageScreenState extends State<HomeStageScreen> {
 
   /// Floating "For You" mystery box button opening the [MysteryBoxModal] for [activeStage].
   Widget _buildForYouFloatingButton(StagePalette palette) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          MysteryBoxModal.show(
-            context,
-            activeMood: activeStage,
-            palette: palette,
-            langCode: _selectedLanguage,
-            mysteryBoxEngine: _mysteryBoxEngine,
-            isItemBookmarked: (item) => _bookmarkedIds.contains(item.id),
-            onBookmarkToggle: (item) {
-              final wasSaved = _bookmarkedIds.contains(item.id);
-              setState(() {
-                if (wasSaved) {
-                  _bookmarkedIds.remove(item.id);
-                } else {
-                  _bookmarkedIds.add(item.id);
-                }
-              });
-              final message = !wasSaved
-                  ? 'Saved to your quiet sanctuary'
-                  : 'Removed from saved moments';
-              _showGentleNotice(message, palette);
-            },
-            onShare: (item) {
-              _showGentleNotice(
-                'Copied to share gentle comfort',
-                palette,
-              );
-            },
-          );
-        },
-        borderRadius: BorderRadius.circular(28.0),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 9.0),
-          decoration: BoxDecoration(
-            color: palette.accent,
-            borderRadius: BorderRadius.circular(28.0),
-            boxShadow: [
-              BoxShadow(
-                color: palette.accent.withValues(alpha: 0.35),
-                blurRadius: 10.0,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.inventory_2_outlined,
-                size: 16.0,
-                color: Colors.white,
-              ),
-              SizedBox(width: 5.0),
-              Text(
-                'For You',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 78.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            MysteryBoxModal.show(
+              context,
+              activeMood: activeStage,
+              palette: palette,
+              langCode: _selectedLanguage,
+              mysteryBoxEngine: _mysteryBoxEngine,
+              isItemBookmarked: (item) => _bookmarkedIds.contains(item.id),
+              onBookmarkToggle: (item) => _toggleBookmark(item.id),
+              onShare: null,
+            );
+          },
+          borderRadius: BorderRadius.circular(28.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 9.0),
+            decoration: BoxDecoration(
+              color: palette.accent,
+              borderRadius: BorderRadius.circular(28.0),
+              boxShadow: [
+                BoxShadow(
+                  color: palette.accent.withValues(alpha: 0.35),
+                  blurRadius: 10.0,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.inventory_2_outlined,
+                  size: 16.0,
                   color: Colors.white,
                 ),
-              ),
-            ],
+                SizedBox(width: 5.0),
+                Text(
+                  'For You',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

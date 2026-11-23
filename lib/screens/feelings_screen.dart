@@ -96,7 +96,7 @@ class _FeelingsScreenState extends State<FeelingsScreen> {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: isWide ? 1200 : 700),

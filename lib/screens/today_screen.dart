@@ -116,7 +116,7 @@ class _TodayScreenState extends State<TodayScreen> {
 
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 32),
+          padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 96),
           child: Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: isWide ? 1200 : 700),

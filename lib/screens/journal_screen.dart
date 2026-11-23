@@ -17,6 +17,7 @@ class JournalScreen extends StatefulWidget {
   final ValueChanged<String>? onBookmarkToggle;
   final JournalStorage? journalStorage;
   final bool? isWideScreen;
+  final VoidCallback? onExploreFeed;
 
   const JournalScreen({
     super.key,
@@ -26,6 +27,7 @@ class JournalScreen extends StatefulWidget {
     this.onBookmarkToggle,
     this.journalStorage,
     this.isWideScreen,
+    this.onExploreFeed,
   });
 
   @override
@@ -104,6 +106,32 @@ class _JournalScreenState extends State<JournalScreen> {
                       color: palette.secondaryText,
                     ),
                   ),
+                  if (widget.onExploreFeed != null) ...[
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      onPressed: widget.onExploreFeed,
+                      icon: Icon(Icons.menu_book_rounded, size: 16, color: palette.accent),
+                      label: Text(
+                        'Explore Scripture Feed',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: palette.accent,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: palette.accent.withValues(alpha: 0.5),
+                          width: 1.2,
+                        ),
+                        backgroundColor: palette.cardSurface,
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -130,7 +158,7 @@ class _JournalScreenState extends State<JournalScreen> {
 
       return SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1200),
@@ -162,7 +190,7 @@ class _JournalScreenState extends State<JournalScreen> {
         constraints: const BoxConstraints(maxWidth: 700),
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           itemCount: savedItems.length,
           itemBuilder: (context, index) {
             final item = savedItems[index];
