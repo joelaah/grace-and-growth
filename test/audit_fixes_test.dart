@@ -6,7 +6,6 @@ import 'package:bible_glory/screens/journal_screen.dart';
 import 'package:bible_glory/screens/today_screen.dart';
 import 'package:bible_glory/screens/feelings_screen.dart';
 import 'package:bible_glory/services/journal_storage.dart';
-import 'package:bible_glory/services/tts_service.dart';
 import 'package:bible_glory/theme/mood_stage_theme.dart';
 
 void main() {
